@@ -1,0 +1,145 @@
+@model SmartLogistics.Models.ViewModels.DashboardViewModel
+@{
+    ViewData["Title"] = "Dashboard";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<!-- Stat Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-xl-3 col-md-6">
+        <div class="card stat-card">
+            <div class="card-body">
+                <div class="stat-info">
+                    <p>Tổng nhân sự</p>
+                    <h3>@Model.TotalStaff</h3>
+                </div>
+                <div class="stat-icon bg-primary-light">
+                    <i class="bi bi-people-fill"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+        <div class="card stat-card">
+            <div class="card-body">
+                <div class="stat-info">
+                    <p>Phương tiện hoạt động</p>
+                    <h3>@Model.ActiveVehicles<small class="text-muted fs-6">/@Model.TotalVehicles</small></h3>
+                </div>
+                <div class="stat-icon bg-success-light">
+                    <i class="bi bi-truck"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+        <div class="card stat-card">
+            <div class="card-body">
+                <div class="stat-info">
+                    <p>Đơn hàng chờ xử lý</p>
+                    <h3>@Model.PendingOrders</h3>
+                </div>
+                <div class="stat-icon bg-warning-light">
+                    <i class="bi bi-box-seam-fill"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+        <div class="card stat-card">
+            <div class="card-body">
+                <div class="stat-info">
+                    <p>Chuyến đi đang thực hiện</p>
+                    <h3>@Model.ActiveTrips</h3>
+                </div>
+                <div class="stat-icon bg-danger-light">
+                    <i class="bi bi-signpost-2-fill"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Row -->
+<div class="row g-3 mb-4">
+    <div class="col-lg-8">
+        <div class="chart-card">
+            <h6><i class="bi bi-bar-chart-line-fill me-2"></i>Tổng quan đơn hàng</h6>
+            <canvas id="orderChart" height="250"></canvas>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="chart-card">
+            <h6><i class="bi bi-pie-chart-fill me-2"></i>Trạng thái đơn hàng</h6>
+            <canvas id="statusChart" height="250"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Links -->
+<div class="row g-3">
+    <div class="col-md-4">
+        <a href="@Url.Action("Index", "Staff")" class="text-decoration-none">
+            <div class="card stat-card">
+                <div class="card-body">
+                    <div class="stat-info">
+                        <h6 class="text-primary mb-1">Quản lý Nhân sự</h6>
+                        <p class="mb-0">Thêm, sửa, xóa nhân viên</p>
+                    </div>
+                    <i class="bi bi-arrow-right-circle-fill text-primary fs-4"></i>
+                </div>
+            </div>
+        </a>
+    </div>
+
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script>
+        // Order Status Pie Chart
+        new Chart(document.getElementById('statusChart'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Chờ xử lý', 'Đã gán', 'Đang giao', 'Hoàn thành', 'Hủy'],
+                datasets: [{
+                    data: [@Model.PendingOrders, @Model.AssignedOrders, @Model.DeliveringOrders, @Model.CompletedOrders, @Model.CancelledOrders],
+                    backgroundColor: ['#f59e0b', '#3b82f6', '#8b5cf6', '#22c55e', '#ef4444'],
+                    borderWidth: 0,
+                    hoverOffset: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: 'bottom', labels: { padding: 15, usePointStyle: true, font: { size: 12 } } }
+                }
+            }
+        });
+
+        // Overview Bar Chart
+        new Chart(document.getElementById('orderChart'), {
+            type: 'bar',
+            data: {
+                labels: ['Chờ xử lý', 'Đã gán', 'Đang giao', 'Hoàn thành', 'Hủy'],
+                datasets: [{
+                    label: 'Số đơn hàng',
+                    data: [@Model.PendingOrders, @Model.AssignedOrders, @Model.DeliveringOrders, @Model.CompletedOrders, @Model.CancelledOrders],
+                    backgroundColor: ['rgba(245, 158, 11, 0.7)', 'rgba(59, 130, 246, 0.7)', 'rgba(139, 92, 246, 0.7)', 'rgba(34, 197, 94, 0.7)', 'rgba(239, 68, 68, 0.7)'],
+                    borderRadius: 8,
+                    borderSkipped: false
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: true, ticks: { stepSize: 1 }, grid: { color: '#f1f5f9' } },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+    </script>
+}
+
+

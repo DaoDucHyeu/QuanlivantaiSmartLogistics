@@ -1,0 +1,203 @@
+@model SmartLogistics.Models.ViewModels.ProfileViewModel
+
+@{
+    ViewData["Title"] = "Hồ sơ cá nhân";
+    Layout = "_Layout";
+}
+
+<style>
+    .profile-card {
+        border: none;
+        border-radius: 20px;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        background-color: #ffffff;
+    }
+    /* Combo Xanh Đen (Dark Blue/Navy gradient) */
+    .profile-header {
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+        height: 180px;
+        position: relative;
+    }
+    .profile-avatar-container {
+        position: absolute;
+        bottom: -60px;
+        left: 50%;
+        transform: translateX(-50%);
+    }
+    .profile-avatar {
+        width: 130px;
+        height: 130px;
+        border-radius: 50%;
+        border: 5px solid #ffffff;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+        background-color: #ffffff;
+        object-fit: cover;
+    }
+    .profile-body {
+        padding: 80px 50px 50px 50px;
+    }
+    
+    /* Input Styling */
+    .form-control {
+        border-left: none;
+        padding-left: 0;
+        font-weight: 500;
+        color: #0f172a;
+    }
+    .form-control:disabled {
+        background-color: #f8fafc;
+        color: #64748b;
+    }
+    .input-group-text {
+        background-color: transparent;
+        border-right: none;
+        color: #334155;
+        font-size: 1.1rem;
+        padding-right: 10px;
+    }
+    
+    /* Xanh Đen Focus Effect */
+    .input-group-focus {
+        border-radius: 8px;
+        transition: all 0.2s ease-in-out;
+    }
+    .form-control:focus {
+        border-color: #1e293b;
+        box-shadow: none;
+        background-color: transparent;
+    }
+    
+    /* Buttons */
+    .btn-primary-custom {
+        background-color: #0f172a; /* Đen xanh navy */
+        border-color: #0f172a;
+        color: #ffffff;
+        border-radius: 8px;
+        transition: all 0.3s;
+    }
+    .btn-primary-custom:hover {
+        background-color: #1e293b;
+        border-color: #1e293b;
+        color: #ffffff;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(15, 23, 42, 0.3);
+    }
+    .btn-light-custom {
+        background-color: #f1f5f9;
+        color: #334155;
+        border-radius: 8px;
+        border: none;
+    }
+    .btn-light-custom:hover {
+        background-color: #e2e8f0;
+        color: #0f172a;
+    }
+    
+    /* Badge */
+    .badge-role {
+        background-color: #e2e8f0;
+        color: #0f172a;
+        font-size: 0.85rem;
+        font-weight: 700;
+        padding: 8px 20px;
+        border-radius: 30px;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+    }
+</style>
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 col-md-10">
+            <div class="profile-card">
+                <!-- Header: Xanh đen -->
+                <div class="profile-header">
+                    <div class="profile-avatar-container">
+                        <!-- Sinh avatar theo chữ cái đầu, tone màu navy -->
+                        <img src="https://ui-avatars.com/api/?name=@Model.FullName&background=f1f5f9&color=0f172a&size=200&bold=true&font-size=0.4" class="profile-avatar" alt="Avatar" />
+                    </div>
+                </div>
+
+                <div class="profile-body text-center">
+                    <h2 class="fw-bold mb-2" style="color: #0f172a;">@Model.FullName</h2>
+                    <div class="mb-5">
+                        <span class="badge badge-role">Vai trò: @Model.Role</span>
+                    </div>
+
+                    @if (TempData["SuccessMessage"] != null)
+                    {
+                        <div class="alert alert-success alert-dismissible fade show text-start shadow-sm border-0" role="alert" style="background-color: #ecfdf5; color: #065f46; border-radius: 10px;">
+                            <i class="bi bi-check-circle-fill me-2"></i> @TempData["SuccessMessage"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    }
+
+                    <form asp-action="Profile" method="post" class="text-start">
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                        <div class="row g-4">
+                            <!-- Email (Readonly) -->
+                            <div class="col-md-12">
+                                <label asp-for="Email" class="form-label fw-bold text-muted small text-uppercase tracking-wide">Địa chỉ Email (Tài khoản)</label>
+                                <div class="input-group input-group-focus border rounded-3 p-1">
+                                    <span class="input-group-text border-0"><i class="bi bi-envelope-at-fill"></i></span>
+                                    <input asp-for="Email" class="form-control border-0" disabled />
+                                </div>
+                            </div>
+
+                            <!-- Full Name -->
+                            <div class="col-md-12">
+                                <label asp-for="FullName" class="form-label fw-bold text-muted small text-uppercase tracking-wide">Họ và tên hiển thị</label>
+                                <div class="input-group input-group-focus border rounded-3 p-1 bg-white">
+                                    <span class="input-group-text border-0 bg-white"><i class="bi bi-person-vcard-fill"></i></span>
+                                    <input asp-for="FullName" class="form-control border-0" placeholder="Nhập họ và tên đầy đủ" />
+                                </div>
+                                <span asp-validation-for="FullName" class="text-danger small mt-1 d-block"></span>
+                            </div>
+
+                            <!-- Phone Number -->
+                            <div class="col-md-12">
+                                <label asp-for="PhoneNumber" class="form-label fw-bold text-muted small text-uppercase tracking-wide">Số điện thoại liên hệ</label>
+                                <div class="input-group input-group-focus border rounded-3 p-1 bg-white">
+                                    <span class="input-group-text border-0 bg-white"><i class="bi bi-telephone-fill"></i></span>
+                                    <input asp-for="PhoneNumber" class="form-control border-0" placeholder="Nhập số điện thoại" />
+                                </div>
+                                <span asp-validation-for="PhoneNumber" class="text-danger small mt-1 d-block"></span>
+                            </div>
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="d-flex gap-3 justify-content-end mt-5 pt-4 border-top">
+                            <a href="javascript:history.back()" class="btn btn-light-custom px-4 py-2 fw-bold">
+                                <i class="bi bi-x-lg me-2"></i> Hủy bỏ
+                            </a>
+                            <button type="submit" class="btn btn-primary-custom px-5 py-2 fw-bold">
+                                <i class="bi bi-check2-circle me-2"></i> Lưu cập nhật
+                            </button>
+                        </div>
+                        
+                        <!-- Hidden field cho Role để form post không bị mất -->
+                        <input type="hidden" asp-for="Role" />
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        // Tạo hiệu ứng xanh đen (navy) khi focus vào input group
+        $(document).ready(function() {
+            $('.form-control:not(:disabled)').focus(function() {
+                $(this).closest('.input-group-focus').css('border-color', '#1e293b').css('box-shadow', '0 0 0 3px rgba(30, 41, 59, 0.1)');
+                $(this).siblings('.input-group-text').css('color', '#0f172a');
+            }).blur(function() {
+                $(this).closest('.input-group-focus').css('border-color', '#dee2e6').css('box-shadow', 'none');
+                $(this).siblings('.input-group-text').css('color', '#334155');
+            });
+        });
+    </script>
+}

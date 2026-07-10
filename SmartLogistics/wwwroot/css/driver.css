@@ -1,0 +1,445 @@
+/* =============================================
+   SmartLogistics - Driver Mobile CSS
+   ============================================= */
+
+:root {
+    --driver-primary: #2563eb;
+    --driver-bg: #f1f5f9;
+    --driver-card: #fff;
+    --driver-text: #1e293b;
+    --driver-muted: #64748b;
+}
+
+/* --- Body --- */
+.driver-body {
+    font-family: 'Inter', sans-serif;
+    background: var(--driver-bg);
+    min-height: 100vh;
+    padding-bottom: 70px;
+}
+
+/* --- Top Bar --- */
+.driver-topbar {
+    background: #fff;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid #e2e8f0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.driver-topbar .topbar-brand {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+    color: var(--driver-primary);
+    font-size: 1rem;
+}
+
+.driver-topbar .topbar-title {
+    font-weight: 600;
+    font-size: 1.05rem;
+    color: var(--driver-text);
+}
+
+.driver-topbar .topbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.driver-topbar .topbar-actions .btn-icon {
+    background: none;
+    border: none;
+    font-size: 1.3rem;
+    color: var(--driver-muted);
+    cursor: pointer;
+    position: relative;
+}
+
+.driver-topbar .topbar-actions .notif-badge {
+    position: absolute;
+    top: -4px;
+    right: -6px;
+    width: 16px;
+    height: 16px;
+    background: #ef4444;
+    border-radius: 50%;
+    font-size: 0.6rem;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* --- Content --- */
+.driver-content {
+    padding: 16px;
+}
+
+/* --- Driver Info Card --- */
+.driver-info-card {
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    border-radius: 16px;
+    padding: 20px;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 16px;
+}
+
+.driver-info-card .driver-avatar {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    font-weight: 700;
+}
+
+.driver-info-card .driver-name {
+    font-size: 1.15rem;
+    font-weight: 600;
+}
+
+.driver-info-card .driver-role {
+    background: rgba(255,255,255,0.2);
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 0.72rem;
+    display: inline-block;
+    margin-top: 2px;
+}
+
+.driver-info-card .driver-plate {
+    font-size: 0.82rem;
+    margin-top: 4px;
+    opacity: 0.9;
+}
+
+/* --- Stats Grid --- */
+.stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.stat-mini {
+    background: #fff;
+    border-radius: 12px;
+    padding: 14px;
+    text-align: center;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+
+.stat-mini .stat-number {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--driver-text);
+}
+
+.stat-mini .stat-label {
+    font-size: 0.75rem;
+    color: var(--driver-muted);
+    margin-top: 2px;
+}
+
+.stat-mini.stat-blue { border-top: 3px solid #2563eb; }
+.stat-mini.stat-orange { border-top: 3px solid #f59e0b; }
+.stat-mini.stat-green { border-top: 3px solid #22c55e; }
+.stat-mini.stat-red { border-top: 3px solid #ef4444; }
+
+/* --- Section Title --- */
+.section-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--driver-text);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* --- Trip Cards --- */
+.trip-card {
+    background: #fff;
+    border-radius: 14px;
+    padding: 16px;
+    margin-bottom: 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    border-left: 4px solid transparent;
+    transition: transform 0.2s;
+}
+
+.trip-card:active {
+    transform: scale(0.98);
+}
+
+.trip-card.trip-active { border-left-color: #2563eb; }
+.trip-card.trip-pending { border-left-color: #94a3b8; }
+.trip-card.trip-done { border-left-color: #22c55e; }
+
+.trip-card .trip-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.trip-card .trip-code {
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: var(--driver-text);
+}
+
+.trip-card .trip-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.trip-card .trip-meta-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.82rem;
+    color: var(--driver-muted);
+}
+
+.trip-card .trip-meta-item i {
+    width: 16px;
+    text-align: center;
+    color: var(--driver-primary);
+}
+
+/* --- Delivery Cards --- */
+.delivery-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 14px;
+    margin-bottom: 10px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    border-left: 4px solid #94a3b8;
+}
+
+.delivery-card.delivery-done { border-left-color: #22c55e; }
+.delivery-card.delivery-active { border-left-color: #2563eb; }
+
+.delivery-card .delivery-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.delivery-card .delivery-customer {
+    font-weight: 500;
+    font-size: 0.88rem;
+    color: var(--driver-text);
+}
+
+.delivery-card .delivery-address {
+    font-size: 0.8rem;
+    color: var(--driver-muted);
+    margin-top: 4px;
+}
+
+.delivery-card .delivery-weight {
+    font-size: 0.78rem;
+    color: var(--driver-muted);
+}
+
+/* --- Bottom Nav --- */
+.bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: #fff;
+    border-top: 1px solid #e2e8f0;
+    display: flex;
+    z-index: 100;
+}
+
+.bottom-nav .nav-item {
+    flex: 1;
+    text-align: center;
+    padding: 8px 0;
+    text-decoration: none;
+    color: var(--driver-muted);
+    font-size: 0.68rem;
+    transition: color 0.2s;
+}
+
+.bottom-nav .nav-item i {
+    font-size: 1.2rem;
+    display: block;
+    margin-bottom: 2px;
+}
+
+.bottom-nav .nav-item.active {
+    color: var(--driver-primary);
+    font-weight: 600;
+}
+
+/* --- Trip Header Gradient --- */
+.trip-header-card {
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    border-radius: 16px;
+    padding: 20px;
+    color: #fff;
+    margin-bottom: 16px;
+}
+
+.trip-header-card .trip-id {
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+
+.trip-header-card .trip-route {
+    font-size: 0.95rem;
+    margin-top: 8px;
+    opacity: 0.9;
+}
+
+/* --- Vehicle Stats Row --- */
+.vehicle-stats {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+.vehicle-stats .vs-item {
+    flex: 1;
+    background: #fff;
+    border-radius: 10px;
+    padding: 10px;
+    text-align: center;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+
+.vehicle-stats .vs-value {
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: var(--driver-text);
+}
+
+.vehicle-stats .vs-label {
+    font-size: 0.7rem;
+    color: var(--driver-muted);
+    margin-top: 2px;
+}
+
+/* --- Tab Bar --- */
+.tab-bar {
+    display: flex;
+    background: #fff;
+    border-bottom: 1px solid #e2e8f0;
+    padding: 0 16px;
+}
+
+.tab-bar .tab-item {
+    flex: 1;
+    text-align: center;
+    padding: 12px 0;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--driver-muted);
+    text-decoration: none;
+    border-bottom: 3px solid transparent;
+    transition: all 0.2s;
+}
+
+.tab-bar .tab-item.active {
+    color: var(--driver-primary);
+    border-bottom-color: var(--driver-primary);
+    font-weight: 600;
+}
+
+/* --- Buttons --- */
+.btn-driver {
+    border-radius: 12px;
+    padding: 12px 20px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    border: none;
+    width: 100%;
+    transition: transform 0.2s;
+}
+
+.btn-driver:active { transform: scale(0.97); }
+
+.btn-driver-primary { background: var(--driver-primary); color: #fff; }
+.btn-driver-success { background: #22c55e; color: #fff; }
+.btn-driver-danger-outline { background: transparent; color: #ef4444; border: 2px solid #ef4444; }
+
+/* --- Warning Card --- */
+.warning-card {
+    background: #fef3c7;
+    border-radius: 12px;
+    padding: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+    font-size: 0.82rem;
+    color: #92400e;
+}
+
+/* --- Form labels --- */
+.driver-form .form-label {
+    font-weight: 500;
+    font-size: 0.85rem;
+    color: #475569;
+    margin-bottom: 6px;
+}
+
+.driver-form .form-control,
+.driver-form .form-select {
+    border-radius: 10px;
+    border-color: #e2e8f0;
+    padding: 10px 14px;
+    font-size: 0.88rem;
+}
+
+.driver-form .form-control:focus,
+.driver-form .form-select:focus {
+    border-color: var(--driver-primary);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+/* --- Sticky Bottom Actions --- */
+.sticky-actions {
+    position: fixed;
+    bottom: 60px;
+    left: 0;
+    right: 0;
+    background: #fff;
+    border-top: 1px solid #e2e8f0;
+    padding: 12px 16px;
+    display: flex;
+    gap: 10px;
+    z-index: 99;
+}
+
+/* --- Responsive (already mobile-first) --- */
+@media (min-width: 576px) {
+    .driver-body {
+        max-width: 480px;
+        margin: 0 auto;
+    }
+    .bottom-nav, .sticky-actions {
+        max-width: 480px;
+        left: 50%;
+        transform: translateX(-50%);
+    }
+}

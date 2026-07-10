@@ -1,0 +1,113 @@
+@model SmartLogistics.Models.Order
+@using SmartLogistics.Models
+@{
+    ViewData["Title"] = $"Chi tiết đơn hàng #DH{Model.MaDonHang:D3}";
+    Layout = "~/Views/Shared/_LayoutDieuHanh.cshtml";
+    var (badgeClass, statusName) = Model.TrangThai switch
+    {
+        OrderStatus.ChoXuLy => ("bg-warning text-dark", "Chờ xử lý"),
+        OrderStatus.DaGan => ("bg-primary", "Đã gán"),
+        OrderStatus.DangGiao => ("bg-info", "Đang giao"),
+        OrderStatus.HoanThanh => ("bg-success", "Hoàn thành"),
+        OrderStatus.Huy => ("bg-danger", "Hủy"),
+        _ => ("bg-secondary", "—")
+    };
+}
+
+<div class="page-title">
+    <div>
+        <h2 class="d-inline-block me-2">Chi tiết đơn hàng #DH@(Model.MaDonHang.ToString("D3"))</h2>
+        <span class="badge @badgeClass fs-6">@statusName</span>
+    </div>
+    <a asp-action="Index" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i> Quay lại
+    </a>
+</div>
+
+<div class="row g-3 mb-4">
+    <!-- Thông tin đơn hàng -->
+    <div class="col-md-6">
+        <div class="card data-card h-100">
+            <div class="card-header"><i class="bi bi-info-circle me-2"></i>Thông tin đơn hàng</div>
+            <div class="card-body">
+                <table class="table table-borderless mb-0">
+                    <tr><td class="text-muted" style="width: 160px;">Mã đơn</td><td><strong>#DH@(Model.MaDonHang.ToString("D3"))</strong></td></tr>
+                    <tr><td class="text-muted">Ngày tạo</td><td>@Model.NgayTao.ToString("dd/MM/yyyy HH:mm")</td></tr>
+                    <tr><td class="text-muted">Khối lượng</td><td>@Model.KhoiLuong.ToString("N0") kg</td></tr>
+                    <tr><td class="text-muted">Giá cước</td><td><strong class="text-primary">@Model.GiaCuoc.ToString("N0") ₫</strong></td></tr>
+                    <tr><td class="text-muted">Ngày giao dự kiến</td><td>@(Model.NgayGiaoHang?.ToString("dd/MM/yyyy") ?? "—")</td></tr>
+                    <tr><td class="text-muted">Ghi chú</td><td>@(Model.GhiChu ?? "—")</td></tr>
+                </table>
+            </div>
+        </div>
+    </div>
+    <!-- Thông tin khách hàng -->
+    <div class="col-md-6">
+        <div class="card data-card h-100">
+            <div class="card-header"><i class="bi bi-person-circle me-2"></i>Thông tin khách hàng</div>
+            <div class="card-body">
+                <table class="table table-borderless mb-0">
+                    <tr><td class="text-muted" style="width: 160px;">Khách hàng</td><td><strong>@(Model.KhachHang?.TenKhachHang ?? "—")</strong></td></tr>
+                    <tr><td class="text-muted">Số điện thoại</td><td>@(Model.KhachHang?.SoDienThoai ?? "—")</td></tr>
+                    <tr><td class="text-muted">Email</td><td>@(Model.KhachHang?.Email ?? "—")</td></tr>
+                    <tr><td class="text-muted">Địa chỉ</td><td>@(Model.KhachHang?.DiaChi ?? "—")</td></tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Thông tin lộ trình -->
+<div class="card data-card mb-4">
+    <div class="card-header"><i class="bi bi-geo-alt-fill me-2"></i>Thông tin lộ trình</div>
+    <div class="card-body">
+        <div class="row align-items-center">
+            <div class="col-md-5">
+                <div class="d-flex align-items-start gap-3">
+                    <div class="stat-icon bg-success-light"><i class="bi bi-geo-alt-fill"></i></div>
+                    <div>
+                        <small class="text-muted">Điểm đi</small>
+                        <p class="mb-1 fw-500">@Model.DiemDi</p>
+                        <small class="text-muted">GPS: @Model.DiemDiLat, @Model.DiemDiLng</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2 text-center">
+                <i class="bi bi-arrow-right-circle-fill fs-2 text-primary"></i>
+            </div>
+            <div class="col-md-5">
+                <div class="d-flex align-items-start gap-3">
+                    <div class="stat-icon bg-danger-light"><i class="bi bi-geo-alt-fill"></i></div>
+                    <div>
+                        <small class="text-muted">Điểm đến</small>
+                        <p class="mb-1 fw-500">@Model.DiemDen</p>
+                        <small class="text-muted">GPS: @Model.DiemDenLat, @Model.DiemDenLng</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Action Buttons -->
+<div class="d-flex gap-2">
+    @if (Model.TrangThai == OrderStatus.ChoXuLy)
+    {
+        <a asp-controller="TripManagement" asp-action="Create" class="btn btn-primary">
+            <i class="bi bi-signpost-2-fill me-1"></i> Gán vào chuyến đi
+        </a>
+    }
+    <a asp-action="Edit" asp-route-id="@Model.MaDonHang" class="btn btn-outline-warning">
+        <i class="bi bi-pencil me-1"></i> Chỉnh sửa
+    </a>
+    @if (Model.TrangThai != OrderStatus.DangGiao && Model.TrangThai != OrderStatus.HoanThanh && Model.TrangThai != OrderStatus.Huy)
+    {
+        <form asp-action="Cancel" asp-route-id="@Model.MaDonHang" method="post" class="d-inline"
+              onsubmit="return confirm('Bạn có chắc muốn hủy đơn hàng này?');">
+            @Html.AntiForgeryToken()
+            <button type="submit" class="btn btn-outline-danger"><i class="bi bi-x-circle me-1"></i> Hủy đơn</button>
+        </form>
+    }
+</div>
+
+

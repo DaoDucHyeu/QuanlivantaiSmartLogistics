@@ -1,0 +1,140 @@
+@model SmartLogistics.Models.ViewModels.TripFormViewModel
+@using SmartLogistics.Models
+@{
+    ViewData["Title"] = "Tạo chuyến đi";
+    Layout = "~/Views/Shared/_LayoutDieuHanh.cshtml";
+}
+
+<div class="page-title">
+    <h2><i class="bi bi-signpost-2-fill me-2"></i>Tạo chuyến đi mới</h2>
+    <a asp-action="Index" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i> Quay lại
+    </a>
+</div>
+
+<div class="card data-card">
+    <div class="card-body p-4">
+        <form asp-action="Create" method="post">
+            @Html.AntiForgeryToken()
+            <div asp-validation-summary="All" class="alert alert-danger alert-custom" style="display: @(ViewData.ModelState.ErrorCount > 0 ? "block" : "none")"></div>
+
+            <!-- Thông tin chuyến đi -->
+            <h6 class="text-muted mb-3"><i class="bi bi-truck me-1"></i> Thông tin chuyến đi</h6>
+            <div class="row g-3 mb-4">
+
+                <div class="col-md-6">
+                    <label asp-for="TaiXeId" class="form-label"></label>
+                    <select asp-for="TaiXeId" class="form-select" asp-items="@(ViewBag.DriverList as IEnumerable<SelectListItem>)"></select>
+                    <span asp-validation-for="TaiXeId" class="text-danger small"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="ThoiGianBatDau" class="form-label"></label>
+                    <input asp-for="ThoiGianBatDau" class="form-control" type="datetime-local" />
+                    <span asp-validation-for="ThoiGianBatDau" class="text-danger small"></span>
+                </div>
+                <div class="col-12">
+                    <label asp-for="GhiChu" class="form-label"></label>
+                    <textarea asp-for="GhiChu" class="form-control" rows="2" placeholder="Ghi chú chuyến đi (nếu có)"></textarea>
+                </div>
+            </div>
+
+            <hr />
+
+            <!-- Phân công đơn hàng -->
+            <h6 class="text-muted mb-3">
+                <i class="bi bi-box-seam me-1"></i> Chọn đơn hàng cho chuyến đi
+                <span class="badge bg-info ms-2" id="selectedCount">Đã chọn: 0 đơn</span>
+            </h6>
+
+            @if (Model.OrderClusters == null || !Model.OrderClusters.Any())
+            {
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle me-1"></i> Không có đơn hàng nào đang chờ xử lý để gán.
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-dashboard">
+                        <thead>
+                            <tr>
+                                <th style="width: 50px;">Chọn</th>
+                                <th>Mã đơn</th>
+                                <th>Khách hàng</th>
+                                <th>Điểm đi (Lấy hàng)</th>
+                                <th>Điểm đến (Giao hàng)</th>
+                                <th>Khối lượng</th>
+                                <th>Giá cước</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @for (int i = 0; i < Model.OrderClusters.Count; i++)
+                            {
+                                var group = Model.OrderClusters[i];
+                                var center = group.First();
+                                
+                                // Tiêu đề Nhóm (Header)
+                                <tr class="table-light">
+                                    <td colspan="7">
+                                        <div class="d-flex align-items-center text-primary fw-bold" style="font-size: 0.95rem;">
+                                            <i class="bi bi-geo-alt-fill fs-5 me-2 text-danger"></i> 
+                                            @if(group.Count > 1) {
+                                                <text>🔥 Khuyên dùng ghép chung (@group.Count() đơn): Lấy trong bán kính 2km từ "@center.DiemDi" và giao cùng hướng</text>
+                                            } else {
+                                                <text>📦 Cụm đơn lẻ: @center.DiemDi</text>
+                                            }
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                // Các đơn hàng trong nhóm
+                                foreach (var order in group)
+                                {
+                                    <tr>
+                                        <td>
+                                            <input type="checkbox" name="SelectedOrderIds" value="@order.MaDonHang"
+                                                   class="form-check-input order-checkbox"
+                                                   @(Model.SelectedOrderIds.Contains(order.MaDonHang) ? "checked" : "") />
+                                        </td>
+                                        <td><strong>#DH@(order.MaDonHang.ToString("D3"))</strong></td>
+                                        <td>@(order.KhachHang?.TenKhachHang ?? "—")</td>
+                                        <td><span class="text-truncate d-inline-block" style="max-width: 150px;">@order.DiemDi</span></td>
+                                        <td><span class="text-truncate d-inline-block" style="max-width: 150px;">@order.DiemDen</span></td>
+                                        <td>@order.KhoiLuong.ToString("N0") kg</td>
+                                        <td>@order.GiaCuoc.ToString("N0") ₫</td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+
+            <hr />
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-success px-4"><i class="bi bi-check-lg me-1"></i> Tạo chuyến đi</button>
+                <a asp-action="Index" class="btn btn-outline-secondary px-4">Hủy</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const checkboxes = document.querySelectorAll('.order-checkbox');
+            const countBadge = document.getElementById('selectedCount');
+
+            function updateCount() {
+                const checked = document.querySelectorAll('.order-checkbox:checked').length;
+                countBadge.textContent = `Đã chọn: ${checked} đơn`;
+            }
+
+            checkboxes.forEach(cb => cb.addEventListener('change', updateCount));
+            updateCount();
+        });
+    </script>
+}
+
+

@@ -1,0 +1,107 @@
+@model SmartLogistics.Helpers.PaginatedList<SmartLogistics.Models.AppUser>
+@using SmartLogistics.Models
+@{
+    ViewData["Title"] = "Quản lý Nhân sự";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<div class="page-title">
+    <h2><i class="bi bi-people-fill me-2"></i>Quản lý Nhân sự</h2>
+    <a asp-action="Create" class="btn btn-primary">
+        <i class="bi bi-plus-lg me-1"></i> Thêm nhân sự
+    </a>
+</div>
+
+<!-- Filter Bar -->
+<div class="filter-bar">
+    <form asp-action="Index" method="get" class="d-flex align-items-center gap-2 flex-wrap w-100">
+        <input type="text" name="search" class="form-control" style="max-width: 280px;"
+               placeholder="Tìm kiếm theo tên, email..." value="@ViewBag.Search" />
+        <select name="role" class="form-select" style="max-width: 180px;">
+            <option value="">-- Tất cả vai trò --</option>
+            <option value="@UserType.DieuHanh" selected="@(ViewBag.Role == UserType.DieuHanh)">Điều hành</option>
+            <option value="@UserType.TaiXe" selected="@(ViewBag.Role == UserType.TaiXe)">Tài xế</option>
+            <option value="@UserType.KeToan" selected="@(ViewBag.Role == UserType.KeToan)">Kế toán</option>
+        </select>
+        <button type="submit" class="btn btn-primary">
+            <i class="bi bi-search me-1"></i> Tìm kiếm
+        </button>
+        @if (!string.IsNullOrEmpty(ViewBag.Search as string) || ViewBag.Role != null)
+        {
+            <a asp-action="Index" class="btn btn-outline-secondary">
+                <i class="bi bi-x-lg me-1"></i> Xóa lọc
+            </a>
+        }
+    </form>
+</div>
+
+<!-- Data Table -->
+<div class="card data-card">
+    <div class="table-responsive">
+        <table class="table table-dashboard">
+            <thead>
+                <tr>
+                    <th style="width: 50px;">#</th>
+                    <th>Họ và tên</th>
+                    <th>Tên đăng nhập</th>
+                    <th>Email</th>
+                    <th>Số điện thoại</th>
+                    <th>Vai trò</th>
+                    <th style="width: 120px;">Hành động</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Count == 0)
+                {
+                    <tr>
+                        <td colspan="7" class="text-center text-muted py-4">
+                            <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                            Không tìm thấy nhân sự nào
+                        </td>
+                    </tr>
+                }
+                else
+                {
+                    var stt = (Model.PageIndex - 1) * Model.PageSize + 1;
+                    @foreach (var user in Model)
+                    {
+                        var (badgeClass, roleName) = user.UserType switch
+                        {
+                            UserType.Admin => ("badge-admin", "Admin"),
+                            UserType.DieuHanh => ("badge-dieuhanh", "Điều hành"),
+                            UserType.TaiXe => ("badge-taixe", "Tài xế"),
+                            UserType.KeToan => ("badge-ketoan", "Kế toán"),
+                            _ => ("bg-secondary", "Khác")
+                        };
+                        <tr>
+                            <td>@stt</td>
+                            <td><strong>@user.FullName</strong></td>
+                            <td>@user.UserName</td>
+                            <td>@user.Email</td>
+                            <td>@(user.PhoneNumber ?? "—")</td>
+                            <td><span class="badge-role @badgeClass">@roleName</span></td>
+                            <td>
+                                <a asp-action="Edit" asp-route-id="@user.Id" class="btn-action btn-action-edit" title="Chỉnh sửa">
+                                    <i class="bi bi-pencil-fill"></i>
+                                </a>
+                                <form asp-action="Delete" asp-route-id="@user.Id" method="post" class="d-inline"
+                                      onsubmit="return confirm('Bạn có chắc muốn xóa nhân sự @user.FullName?');">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn-action btn-action-delete" title="Xóa">
+                                        <i class="bi bi-trash-fill"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        stt++;
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+    <div class="pagination-info">
+        @await Html.PartialAsync("_Pagination", (object)Model)
+    </div>
+</div>
+
+

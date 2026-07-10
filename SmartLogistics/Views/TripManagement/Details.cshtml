@@ -1,0 +1,154 @@
+@model SmartLogistics.Models.Trip
+@using SmartLogistics.Models
+@{
+    ViewData["Title"] = $"Chi tiết chuyến đi #CD{Model.MaChuyenDi:D3}";
+    Layout = "~/Views/Shared/_LayoutDieuHanh.cshtml";
+    var (badgeClass, statusName) = Model.TrangThai switch
+    {
+        TripStatus.DangThucHien => ("bg-primary", "Đang thực hiện"),
+        TripStatus.HoanThanh => ("bg-success", "Hoàn thành"),
+        _ => ("bg-secondary", "Chưa bắt đầu")
+    };
+}
+
+<div class="page-title">
+    <div>
+        <h2 class="d-inline-block me-2">Chi tiết chuyến đi #CD@(Model.MaChuyenDi.ToString("D3"))</h2>
+        <span class="badge @badgeClass fs-6">@statusName</span>
+    </div>
+    <a asp-action="Index" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i> Quay lại
+    </a>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show">
+        <i class="bi bi-check-circle me-1"></i> @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show">
+        <i class="bi bi-exclamation-circle me-1"></i> @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="row g-3 mb-4">
+    <!-- Thông tin chuyến đi -->
+    <div class="col-md-6">
+        <div class="card data-card h-100">
+            <div class="card-header"><i class="bi bi-signpost-2 me-2"></i>Thông tin chuyến đi</div>
+            <div class="card-body">
+                <table class="table table-borderless mb-0">
+                    <tr><td class="text-muted" style="width: 170px;">Mã chuyến</td><td><strong>#CD@(Model.MaChuyenDi.ToString("D3"))</strong></td></tr>
+                    <tr><td class="text-muted">Thời gian bắt đầu</td><td>@Model.ThoiGianBatDau.ToString("dd/MM/yyyy HH:mm")</td></tr>
+                    <tr><td class="text-muted">Thời gian kết thúc</td><td>@(Model.ThoiGianKetThuc?.ToString("dd/MM/yyyy HH:mm") ?? "—")</td></tr>
+
+                    <tr><td class="text-muted">Trạng thái</td><td><span class="badge @badgeClass">@statusName</span></td></tr>
+                    @if (!string.IsNullOrEmpty(Model.GhiChu))
+                    {
+                        <tr><td class="text-muted">Ghi chú</td><td>@Model.GhiChu</td></tr>
+                    }
+                </table>
+            </div>
+        </div>
+    </div>
+    <!-- Thông tin xe & tài xế -->
+    <div class="col-md-6">
+        <div class="card data-card h-100">
+            <div class="card-header"><i class="bi bi-truck me-2"></i>Thông tin xe & tài xế</div>
+            <div class="card-body">
+                <table class="table table-borderless mb-0">
+                    <tr><td class="text-muted" style="width: 170px;">Biển số</td><td><strong>@(Model.Xe?.BienSo ?? "—")</strong></td></tr>
+                    <tr><td class="text-muted">Loại xe</td><td>@(Model.Xe?.LoaiXe ?? "—")</td></tr>
+                    <tr><td class="text-muted">Tài xế</td><td><strong>@(Model.TaiXe?.FullName ?? "—")</strong></td></tr>
+                    <tr><td class="text-muted">SĐT tài xế</td><td>@(Model.TaiXe?.PhoneNumber ?? "—")</td></tr>
+                    <tr><td class="text-muted">Email</td><td>@(Model.TaiXe?.Email ?? "—")</td></tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Danh sách đơn hàng trong chuyến -->
+<div class="card data-card mb-4">
+    <div class="card-header">
+        <i class="bi bi-box-seam me-2"></i>Danh sách đơn hàng trong chuyến
+        <span class="badge bg-info ms-2">@Model.TripDetails.Count đơn</span>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-dashboard mb-0">
+            <thead>
+                <tr>
+                    <th style="width: 60px;">Thứ tự</th>
+                    <th>Mã đơn</th>
+                    <th>Khách hàng</th>
+                    <th>Điểm đi</th>
+                    <th>Điểm đến</th>
+                    <th>Khối lượng</th>
+                    <th>Trạng thái</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!Model.TripDetails.Any())
+                {
+                    <tr><td colspan="7" class="text-center text-muted py-3">Chưa có đơn hàng nào trong chuyến</td></tr>
+                }
+                else
+                {
+                    @foreach (var td in Model.TripDetails.OrderBy(td => td.ThuTu))
+                    {
+                        var (tdBadge, tdStatus) = td.TrangThai switch
+                        {
+                            TripDetailStatus.DangGiao => ("bg-info", "Đang giao"),
+                            TripDetailStatus.DaGiao => ("bg-success", "Đã giao"),
+                            _ => ("bg-secondary", "Chưa giao")
+                        };
+                        <tr>
+                            <td class="text-center">@td.ThuTu</td>
+                            <td><a asp-controller="OrderManagement" asp-action="Details" asp-route-id="@td.MaDonHang"><strong>#DH@(td.MaDonHang.ToString("D3"))</strong></a></td>
+                            <td>@(td.DonHang?.KhachHang?.TenKhachHang ?? "—")</td>
+                            <td>@(td.DonHang?.DiemDi ?? "—")</td>
+                            <td>@(td.DonHang?.DiemDen ?? "—")</td>
+                            <td>@(td.DonHang?.KhoiLuong.ToString("N0") ?? "—") kg</td>
+                            <td><span class="badge @tdBadge rounded-pill">@tdStatus</span></td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Action Buttons -->
+<div class="d-flex gap-2">
+    @if (Model.TrangThai == TripStatus.ChuaBatDau)
+    {
+        <form asp-action="Start" asp-route-id="@Model.MaChuyenDi" method="post" class="d-inline"
+              onsubmit="return confirm('Bắt đầu chuyến đi này?');">
+            @Html.AntiForgeryToken()
+            <button type="submit" class="btn btn-success"><i class="bi bi-play-fill me-1"></i> Bắt đầu chuyến</button>
+        </form>
+    }
+    @if (Model.TrangThai == TripStatus.DangThucHien)
+    {
+        <form asp-action="Complete" asp-route-id="@Model.MaChuyenDi" method="post" class="d-inline"
+              onsubmit="return confirm('Hoàn thành chuyến đi này?');">
+            @Html.AntiForgeryToken()
+            <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg me-1"></i> Kết thúc chuyến</button>
+        </form>
+    }
+    @if (Model.TrangThai == TripStatus.ChuaBatDau)
+    {
+        <form asp-action="Delete" asp-route-id="@Model.MaChuyenDi" method="post" class="d-inline"
+              onsubmit="return confirm('Bạn có chắc muốn xóa chuyến đi này?');">
+            @Html.AntiForgeryToken()
+            <button type="submit" class="btn btn-outline-danger"><i class="bi bi-trash me-1"></i> Xóa chuyến</button>
+        </form>
+    }
+</div>
+
+

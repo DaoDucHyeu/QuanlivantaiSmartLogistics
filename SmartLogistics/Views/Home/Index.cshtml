@@ -1,0 +1,371 @@
+﻿@{
+    ViewData["Title"] = "Trang chủ";
+}
+
+<style>
+    /* ===== HERO SECTION ===== */
+    .hero {
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+        padding: 100px 0 80px;
+        position: relative;
+        overflow: hidden;
+        min-height: 600px;
+        display: flex;
+        align-items: center;
+    }
+    .hero::before {
+        content: '';
+        position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+        background:
+            radial-gradient(ellipse at 20% 50%, rgba(37,99,235,0.15) 0%, transparent 50%),
+            radial-gradient(ellipse at 80% 20%, rgba(6,182,212,0.1) 0%, transparent 50%),
+            radial-gradient(ellipse at 50% 80%, rgba(139,92,246,0.08) 0%, transparent 50%);
+    }
+    .hero-content { position: relative; z-index: 2; }
+    .hero-badge {
+        display: inline-flex; align-items: center; gap: 8px;
+        background: rgba(37,99,235,0.15); border: 1px solid rgba(37,99,235,0.3);
+        color: #60a5fa; padding: 6px 16px; border-radius: 100px;
+        font-size: 0.8rem; font-weight: 600; margin-bottom: 24px;
+    }
+    .hero-badge i { font-size: 0.7rem; }
+    .hero h1 {
+        font-size: 3.2rem; font-weight: 900; color: #fff;
+        line-height: 1.15; margin-bottom: 20px;
+        max-width: 600px;
+    }
+    .hero h1 .text-gradient {
+        background: linear-gradient(135deg, #60a5fa, #06b6d4, #a78bfa);
+        -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .hero-subtitle {
+        font-size: 1.1rem; color: rgba(255,255,255,0.55);
+        max-width: 500px; line-height: 1.8; margin-bottom: 36px;
+    }
+    .hero-btns { display: flex; gap: 14px; flex-wrap: wrap; }
+    .btn-hero-primary {
+        background: linear-gradient(135deg, #2563eb, #06b6d4);
+        color: #fff; padding: 14px 32px; border-radius: 14px;
+        font-weight: 700; font-size: 0.95rem; border: none;
+        text-decoration: none; display: inline-flex; align-items: center; gap: 10px;
+        transition: all 0.3s ease;
+    }
+    .btn-hero-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(37,99,235,0.4); color: #fff; }
+    .btn-hero-secondary {
+        background: rgba(255,255,255,0.06); border: 1.5px solid rgba(255,255,255,0.15);
+        color: #fff; padding: 14px 28px; border-radius: 14px;
+        font-weight: 600; font-size: 0.95rem;
+        text-decoration: none; display: inline-flex; align-items: center; gap: 10px;
+        transition: all 0.3s ease;
+    }
+    .btn-hero-secondary:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.3); color: #fff; }
+
+    /* Hero Visual */
+    .hero-visual {
+        position: relative; z-index: 2;
+    }
+    .hero-card {
+        background: rgba(255,255,255,0.04);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 20px;
+        padding: 28px;
+        max-width: 440px;
+        margin-left: auto;
+    }
+    .hero-card-header {
+        display: flex; align-items: center; gap: 12px; margin-bottom: 20px;
+    }
+    .hc-avatar { width: 44px; height: 44px; border-radius: 12px;
+        background: linear-gradient(135deg, #2563eb, #06b6d4);
+        display: flex; align-items: center; justify-content: center; color: #fff; font-size: 1.2rem;
+    }
+    .hc-info .hc-title { color: #fff; font-weight: 700; font-size: 0.95rem; }
+    .hc-info .hc-sub { color: rgba(255,255,255,0.4); font-size: 0.78rem; }
+    .mini-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+    .ms-item {
+        background: rgba(255,255,255,0.04); border-radius: 12px; padding: 14px;
+        border: 1px solid rgba(255,255,255,0.06);
+    }
+    .ms-val { font-size: 1.5rem; font-weight: 800; }
+    .ms-label { font-size: 0.72rem; color: rgba(255,255,255,0.4); margin-top: 2px; }
+    .ms-green { color: #22c55e; }
+    .ms-blue { color: #60a5fa; }
+    .ms-orange { color: #f59e0b; }
+    .ms-cyan { color: #06b6d4; }
+    .progress-row { margin-bottom: 10px; }
+    .progress-row .d-flex { font-size: 0.78rem; color: rgba(255,255,255,0.5); margin-bottom: 5px; }
+    .progress-row .progress { height: 6px; background: rgba(255,255,255,0.06); border-radius: 100px; }
+
+    /* ===== FEATURES ===== */
+    .features-section { padding: 80px 0; background: #fff; }
+    .section-eyebrow {
+        text-transform: uppercase; font-size: 0.75rem; font-weight: 700;
+        color: #2563eb; letter-spacing: 2px; margin-bottom: 12px;
+    }
+    .section-title-main {
+        font-size: 2.2rem; font-weight: 900; color: #0f172a;
+        margin-bottom: 8px;
+    }
+    .section-subtitle { color: #64748b; font-size: 1rem; margin-bottom: 48px; max-width: 560px; }
+    .feature-card {
+        background: #fff; border: 1px solid #e2e8f0;
+        border-radius: 16px; padding: 28px 24px; height: 100%;
+        transition: all 0.3s ease; position: relative; overflow: hidden;
+    }
+    .feature-card::before {
+        content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+        background: linear-gradient(90deg, var(--sl-primary), var(--sl-accent));
+        opacity: 0; transition: opacity 0.3s;
+    }
+    .feature-card:hover { transform: translateY(-4px); box-shadow: 0 12px 40px rgba(0,0,0,0.08); border-color: transparent; }
+    .feature-card:hover::before { opacity: 1; }
+    .fc-icon {
+        width: 52px; height: 52px; border-radius: 14px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.3rem; margin-bottom: 18px;
+    }
+    .fc-icon-blue { background: rgba(37,99,235,0.1); color: #2563eb; }
+    .fc-icon-green { background: rgba(34,197,94,0.1); color: #22c55e; }
+    .fc-icon-purple { background: rgba(139,92,246,0.1); color: #8b5cf6; }
+    .fc-icon-cyan { background: rgba(6,182,212,0.1); color: #06b6d4; }
+    .fc-icon-orange { background: rgba(245,158,11,0.1); color: #f59e0b; }
+    .fc-icon-red { background: rgba(239,68,68,0.1); color: #ef4444; }
+    .feature-card h5 { font-size: 1.05rem; font-weight: 700; color: #0f172a; margin-bottom: 8px; }
+    .feature-card p { font-size: 0.85rem; color: #64748b; line-height: 1.7; margin: 0; }
+
+    /* ===== STATS ===== */
+    .stats-section {
+        background: linear-gradient(135deg, #0f172a, #1e293b);
+        padding: 70px 0;
+    }
+    .stat-big { text-align: center; padding: 20px; }
+    .stat-big-number {
+        font-size: 3rem; font-weight: 900;
+        background: linear-gradient(135deg, #60a5fa, #06b6d4);
+        -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .stat-big-label { color: rgba(255,255,255,0.5); font-size: 0.88rem; font-weight: 500; margin-top: 4px; }
+
+    /* ===== CTA ===== */
+    .cta-section {
+        padding: 80px 0;
+        background: var(--sl-bg-light);
+        text-align: center;
+    }
+    .cta-box {
+        background: linear-gradient(135deg, #1e293b, #0f172a);
+        border-radius: 24px;
+        padding: 60px 40px;
+        position: relative; overflow: hidden;
+    }
+    .cta-box::before {
+        content: ''; position: absolute; top: -50%; right: -30%;
+        width: 400px; height: 400px;
+        background: radial-gradient(circle, rgba(37,99,235,0.2) 0%, transparent 60%);
+    }
+    .cta-box h2 { font-size: 2rem; font-weight: 900; color: #fff; margin-bottom: 12px; position: relative; z-index: 2; }
+    .cta-box p { color: rgba(255,255,255,0.5); margin-bottom: 30px; position: relative; z-index: 2; }
+
+    /* ===== ANIMATIONS ===== */
+    .fade-up { opacity: 0; transform: translateY(30px); transition: all 0.6s ease; }
+    .fade-up.visible { opacity: 1; transform: translateY(0); }
+
+    @@media (max-width: 768px) {
+        .hero h1 { font-size: 2rem; }
+        .hero-card { margin: 30px auto 0; }
+        .stat-big-number { font-size: 2rem; }
+    }
+</style>
+
+<!-- ===== HERO ===== -->
+<section class="hero">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6 hero-content">
+                <div class="hero-badge">
+                    <i class="bi bi-lightning-charge-fill"></i>
+                    Hệ thống quản lý vận tải thông minh
+                </div>
+                <h1>
+                    Vận chuyển<br>
+                    <span class="text-gradient">thông minh hơn</span><br>
+                    mỗi ngày.
+                </h1>
+                <p class="hero-subtitle">
+                    Quản lý đội xe, theo dõi GPS real-time, tối ưu lộ trình
+                    và phân tích doanh thu – tất cả trong một nền tảng duy nhất.
+                </p>
+                <div class="hero-btns">
+                    <a asp-controller="Account" asp-action="Login" class="btn-hero-primary">
+                        <i class="bi bi-box-arrow-in-right"></i> Đăng nhập hệ thống
+                    </a>
+                    <a href="#features" class="btn-hero-secondary">
+                        <i class="bi bi-play-circle"></i> Tìm hiểu thêm
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-6 hero-visual">
+                <div class="hero-card">
+                    <div class="hero-card-header">
+                        <div class="hc-avatar"><i class="bi bi-speedometer2"></i></div>
+                        <div class="hc-info">
+                            <div class="hc-title">Dashboard Overview</div>
+                            <div class="hc-sub">Cập nhật lúc @DateTime.Now.ToString("HH:mm") hôm nay</div>
+                        </div>
+                    </div>
+                    <div class="mini-stats">
+                        <div class="ms-item">
+                            <div class="ms-val ms-blue">24</div>
+                            <div class="ms-label">Xe đang hoạt động</div>
+                        </div>
+                        <div class="ms-item">
+                            <div class="ms-val ms-green">156</div>
+                            <div class="ms-label">Đơn hàng hôm nay</div>
+                        </div>
+                        <div class="ms-item">
+                            <div class="ms-val ms-orange">98%</div>
+                            <div class="ms-label">Tỷ lệ giao thành công</div>
+                        </div>
+                        <div class="ms-item">
+                            <div class="ms-val ms-cyan">12.5M</div>
+                            <div class="ms-label">Doanh thu hôm nay</div>
+                        </div>
+                    </div>
+                    <div class="progress-row">
+                        <div class="d-flex justify-content-between"><span>Tiến độ giao hàng</span><span>78%</span></div>
+                        <div class="progress"><div class="progress-bar" style="width: 78%; background: linear-gradient(90deg, #2563eb, #06b6d4); border-radius: 100px;"></div></div>
+                    </div>
+                    <div class="progress-row">
+                        <div class="d-flex justify-content-between"><span>Công suất đội xe</span><span>65%</span></div>
+                        <div class="progress"><div class="progress-bar" style="width: 65%; background: linear-gradient(90deg, #22c55e, #06b6d4); border-radius: 100px;"></div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ===== FEATURES ===== -->
+<section class="features-section" id="features">
+    <div class="container">
+        <div class="text-center fade-up">
+            <div class="section-eyebrow">Tính năng nổi bật</div>
+            <h2 class="section-title-main">Mọi thứ bạn cần để quản lý vận tải</h2>
+            <p class="section-subtitle mx-auto">Từ theo dõi GPS đến phân tích doanh thu, SmartLogistics cung cấp công cụ toàn diện cho doanh nghiệp.</p>
+        </div>
+        <div class="row g-4 mt-2">
+            <div class="col-md-4 fade-up">
+                <div class="feature-card">
+                    <div class="fc-icon fc-icon-blue"><i class="bi bi-geo-alt-fill"></i></div>
+                    <h5>Theo dõi GPS Real-time</h5>
+                    <p>Giám sát vị trí đội xe trực tiếp trên bản đồ với Leaflet.js. Cập nhật vị trí real-time qua SignalR.</p>
+                </div>
+            </div>
+            <div class="col-md-4 fade-up">
+                <div class="feature-card">
+                    <div class="fc-icon fc-icon-green"><i class="bi bi-box-seam-fill"></i></div>
+                    <h5>Quản lý Đơn hàng</h5>
+                    <p>Tạo, phân công và theo dõi toàn bộ đơn hàng. Quản lý trạng thái từ tiếp nhận đến giao thành công.</p>
+                </div>
+            </div>
+            <div class="col-md-4 fade-up">
+                <div class="feature-card">
+                    <div class="fc-icon fc-icon-purple"><i class="bi bi-truck"></i></div>
+                    <h5>Quản lý Đội xe</h5>
+                    <p>Theo dõi trạng thái phương tiện, lịch bảo trì và phân công tài xế một cách hiệu quả.</p>
+                </div>
+            </div>
+            <div class="col-md-4 fade-up">
+                <div class="feature-card">
+                    <div class="fc-icon fc-icon-cyan"><i class="bi bi-phone-fill"></i></div>
+                    <h5>Ứng dụng Tài xế</h5>
+                    <p>Giao diện mobile-first cho tài xế: nhận chuyến, xác nhận giao hàng, báo cáo sự cố ngay trên điện thoại.</p>
+                </div>
+            </div>
+            <div class="col-md-4 fade-up">
+                <div class="feature-card">
+                    <div class="fc-icon fc-icon-orange"><i class="bi bi-bar-chart-line-fill"></i></div>
+                    <h5>Báo cáo & Thống kê</h5>
+                    <p>Phân tích doanh thu, chi phí nhiên liệu và lợi nhuận với biểu đồ trực quan theo thời gian.</p>
+                </div>
+            </div>
+            <div class="col-md-4 fade-up">
+                <div class="feature-card">
+                    <div class="fc-icon fc-icon-red"><i class="bi bi-bell-fill"></i></div>
+                    <h5>Thông báo Real-time</h5>
+                    <p>Cảnh báo sự cố, cập nhật chuyến đi và thông báo hệ thống qua SignalR push notification.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ===== STATS ===== -->
+<section class="stats-section" id="stats">
+    <div class="container">
+        <div class="text-center mb-4 fade-up">
+            <div class="section-eyebrow" style="color:#60a5fa;">Con số ấn tượng</div>
+            <h2 style="color:#fff; font-size: 2rem; font-weight: 900;">Nền tảng đáng tin cậy</h2>
+        </div>
+        <div class="row g-0 fade-up">
+            <div class="col-6 col-md-3">
+                <div class="stat-big">
+                    <div class="stat-big-number">500+</div>
+                    <div class="stat-big-label">Chuyến đi mỗi tháng</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="stat-big">
+                    <div class="stat-big-number">50+</div>
+                    <div class="stat-big-label">Phương tiện quản lý</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="stat-big">
+                    <div class="stat-big-number">99.5%</div>
+                    <div class="stat-big-label">Uptime hệ thống</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="stat-big">
+                    <div class="stat-big-number">24/7</div>
+                    <div class="stat-big-label">Giám sát liên tục</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ===== CTA ===== -->
+<section class="cta-section">
+    <div class="container">
+        <div class="cta-box fade-up">
+            <h2>Sẵn sàng bắt đầu?</h2>
+            <p>Đăng nhập ngay để trải nghiệm hệ thống quản lý vận chuyển thông minh SmartLogistics</p>
+            <div class="d-flex justify-content-center gap-3 flex-wrap" style="position: relative; z-index: 2;">
+                <a asp-controller="Account" asp-action="Login" class="btn-hero-primary">
+                    <i class="bi bi-box-arrow-in-right"></i> Đăng nhập
+                </a>
+                <a href="#features" class="btn-hero-secondary">
+                    <i class="bi bi-info-circle"></i> Tìm hiểu thêm
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        // Scroll fade-up animation
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, { threshold: 0.1 });
+
+        document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+    </script>
+}

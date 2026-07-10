@@ -1,0 +1,76 @@
+@model List<SmartLogistics.Models.Trip>
+@using SmartLogistics.Models
+@{
+    ViewData["Title"] = "Chuyến đi của tôi";
+    Layout = "~/Views/Shared/_DriverLayout.cshtml";
+    var tab = ViewBag.Tab as string ?? "all";
+}
+
+<!-- Tab Bar -->
+<div style="margin: -16px -16px 16px -16px;">
+    <div class="tab-bar">
+        <a class="tab-item @(tab == "all" ? "active" : "")" asp-action="Trips">Tất cả</a>
+        <a class="tab-item @(tab == "active" ? "active" : "")" asp-action="Trips" asp-route-tab="active">Đang đi</a>
+        <a class="tab-item @(tab == "done" ? "active" : "")" asp-action="Trips" asp-route-tab="done">Hoàn thành</a>
+    </div>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="text-center text-muted py-5">
+        <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+        <p>Không có chuyến đi nào</p>
+    </div>
+}
+else
+{
+    @foreach (var trip in Model)
+    {
+        var (cardClass, badgeClass, statusName) = trip.TrangThai switch
+        {
+            TripStatus.DangThucHien => ("trip-active", "bg-primary", "Đang thực hiện"),
+            TripStatus.HoanThanh => ("trip-done", "bg-success", "Hoàn thành"),
+            _ => ("trip-pending", "bg-secondary", "Chưa bắt đầu")
+        };
+
+        <a asp-action="TripDetail" asp-route-id="@trip.MaChuyenDi" class="text-decoration-none">
+            <div class="trip-card @cardClass">
+                <div class="trip-header">
+                    <span class="trip-code">#CD@(trip.MaChuyenDi.ToString("D3"))</span>
+                    <span class="badge @badgeClass rounded-pill">@statusName</span>
+                </div>
+                <div class="trip-meta">
+                    <div class="trip-meta-item">
+                        <i class="bi bi-credit-card-2-front"></i>
+                        <span>@(trip.Xe?.BienSo ?? "—")</span>
+                    </div>
+                    <div class="trip-meta-item">
+                        <i class="bi bi-clock"></i>
+                        <span>@trip.ThoiGianBatDau.ToString("dd/MM/yyyy HH:mm")</span>
+                        @if (trip.ThoiGianKetThuc.HasValue)
+                        {
+                            <span>- @trip.ThoiGianKetThuc.Value.ToString("HH:mm")</span>
+                        }
+                    </div>
+                    <div class="trip-meta-item">
+                        <i class="bi bi-box-seam"></i>
+                        <span>@trip.TripDetails.Count đơn hàng</span>
+                    </div>
+                    @if (trip.TongKhoangCach > 0)
+                    {
+                        <div class="trip-meta-item">
+                            <i class="bi bi-signpost-2"></i>
+                            <span>@trip.TongKhoangCach.ToString("N0") km</span>
+                        </div>
+                    }
+                </div>
+                @if (trip.TrangThai == TripStatus.DangThucHien)
+                {
+                    <div class="mt-2 text-end">
+                        <span class="text-primary" style="font-size: 0.82rem; font-weight: 600;">Xem chi tiết <i class="bi bi-arrow-right"></i></span>
+                    </div>
+                }
+            </div>
+        </a>
+    }
+}

@@ -1,0 +1,174 @@
+@model SmartLogistics.Helpers.PaginatedList<SmartLogistics.Models.Order>
+@using SmartLogistics.Models
+@{
+    ViewData["Title"] = "Quản lý Đơn hàng";
+    Layout = "~/Views/Shared/_LayoutDieuHanh.cshtml";
+}
+
+<!-- Stat Cards -->
+<div class="row g-3 mb-4">
+    <div class="col">
+        <div class="card stat-card">
+            <div class="card-body py-3">
+                <div class="stat-info">
+                    <p>Chờ xử lý</p>
+                    <h3>@ViewBag.PendingCount</h3>
+                </div>
+                <div class="stat-icon bg-warning-light"><i class="bi bi-clock-fill"></i></div>
+            </div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="card stat-card">
+            <div class="card-body py-3">
+                <div class="stat-info">
+                    <p>Đã gán</p>
+                    <h3>@ViewBag.AssignedCount</h3>
+                </div>
+                <div class="stat-icon bg-primary-light"><i class="bi bi-check2-circle"></i></div>
+            </div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="card stat-card">
+            <div class="card-body py-3">
+                <div class="stat-info">
+                    <p>Đang giao</p>
+                    <h3>@ViewBag.DeliveringCount</h3>
+                </div>
+                <div class="stat-icon" style="background: rgba(139,92,246,0.12); color: #8b5cf6;"><i class="bi bi-truck"></i></div>
+            </div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="card stat-card">
+            <div class="card-body py-3">
+                <div class="stat-info">
+                    <p>Hoàn thành</p>
+                    <h3>@ViewBag.CompletedCount</h3>
+                </div>
+                <div class="stat-icon bg-success-light"><i class="bi bi-check-circle-fill"></i></div>
+            </div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="card stat-card">
+            <div class="card-body py-3">
+                <div class="stat-info">
+                    <p>Đã hủy</p>
+                    <h3>@ViewBag.CancelledCount</h3>
+                </div>
+                <div class="stat-icon bg-danger-light"><i class="bi bi-x-circle-fill"></i></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="page-title">
+    <h2><i class="bi bi-box-seam-fill me-2"></i>Quản lý Đơn hàng</h2>
+    <a asp-action="Create" class="btn btn-primary">
+        <i class="bi bi-plus-lg me-1"></i> Tạo đơn hàng
+    </a>
+</div>
+
+<!-- Filter Bar -->
+<div class="filter-bar">
+    <form asp-action="Index" method="get" class="d-flex align-items-center gap-2 flex-wrap w-100">
+        <input type="text" name="search" class="form-control" style="max-width: 260px;"
+               placeholder="Tìm kiếm theo mã đơn, khách hàng..." value="@ViewBag.Search" />
+        <select name="status" class="form-select" style="max-width: 170px;">
+            <option value="">-- Trạng thái --</option>
+            <option value="@OrderStatus.ChoXuLy" selected="@(ViewBag.Status == OrderStatus.ChoXuLy)">Chờ xử lý</option>
+            <option value="@OrderStatus.DaGan" selected="@(ViewBag.Status == OrderStatus.DaGan)">Đã gán</option>
+            <option value="@OrderStatus.DangGiao" selected="@(ViewBag.Status == OrderStatus.DangGiao)">Đang giao</option>
+            <option value="@OrderStatus.HoanThanh" selected="@(ViewBag.Status == OrderStatus.HoanThanh)">Hoàn thành</option>
+            <option value="@OrderStatus.Huy" selected="@(ViewBag.Status == OrderStatus.Huy)">Hủy</option>
+        </select>
+        <input type="date" name="fromDate" class="form-control" style="max-width: 160px;"
+               value="@(ViewBag.FromDate != null ? ((DateTime)ViewBag.FromDate).ToString("yyyy-MM-dd") : "")" placeholder="Từ ngày" />
+        <input type="date" name="toDate" class="form-control" style="max-width: 160px;"
+               value="@(ViewBag.ToDate != null ? ((DateTime)ViewBag.ToDate).ToString("yyyy-MM-dd") : "")" placeholder="Đến ngày" />
+        <button type="submit" class="btn btn-primary"><i class="bi bi-funnel me-1"></i> Lọc</button>
+        @if (!string.IsNullOrEmpty(ViewBag.Search as string) || ViewBag.Status != null || ViewBag.FromDate != null)
+        {
+            <a asp-action="Index" class="btn btn-outline-secondary"><i class="bi bi-x-lg me-1"></i> Xóa lọc</a>
+        }
+    </form>
+</div>
+
+<!-- Data Table -->
+<div class="card data-card">
+    <div class="table-responsive">
+        <table class="table table-dashboard">
+            <thead>
+                <tr>
+                    <th>Mã đơn</th>
+                    <th>Khách hàng</th>
+                    <th>Điểm đi</th>
+                    <th>Điểm đến</th>
+                    <th>Khối lượng</th>
+                    <th>Giá cước</th>
+                    <th>Trạng thái</th>
+                    <th style="width: 140px;">Hành động</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Count == 0)
+                {
+                    <tr>
+                        <td colspan="8" class="text-center text-muted py-4">
+                            <i class="bi bi-inbox fs-1 d-block mb-2"></i>Không tìm thấy đơn hàng nào
+                        </td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var order in Model)
+                    {
+                        var (badgeClass, statusName) = order.TrangThai switch
+                        {
+                            OrderStatus.ChoXuLy => ("bg-warning text-dark", "Chờ xử lý"),
+                            OrderStatus.DaGan => ("bg-primary", "Đã gán"),
+                            OrderStatus.DangGiao => ("bg-info", "Đang giao"),
+                            OrderStatus.HoanThanh => ("bg-success", "Hoàn thành"),
+                            OrderStatus.Huy => ("bg-danger", "Hủy"),
+                            _ => ("bg-secondary", "—")
+                        };
+                        <tr>
+                            <td><strong>#DH@(order.MaDonHang.ToString("D3"))</strong></td>
+                            <td>@(order.KhachHang?.TenKhachHang ?? "—")</td>
+                            <td title="@order.DiemDi">@(order.DiemDi.Length > 25 ? order.DiemDi.Substring(0, 25) + "..." : order.DiemDi)</td>
+                            <td title="@order.DiemDen">@(order.DiemDen.Length > 25 ? order.DiemDen.Substring(0, 25) + "..." : order.DiemDen)</td>
+                            <td>@order.KhoiLuong.ToString("N0") kg</td>
+                            <td>@order.GiaCuoc.ToString("N0") ₫</td>
+                            <td><span class="badge @badgeClass rounded-pill">@statusName</span></td>
+                            <td>
+                                <a asp-action="Details" asp-route-id="@order.MaDonHang" class="btn-action btn-action-view" title="Xem chi tiết">
+                                    <i class="bi bi-eye-fill"></i>
+                                </a>
+                                <a asp-action="Edit" asp-route-id="@order.MaDonHang" class="btn-action btn-action-edit" title="Chỉnh sửa">
+                                    <i class="bi bi-pencil-fill"></i>
+                                </a>
+                                @if (order.TrangThai == OrderStatus.ChoXuLy)
+                                {
+                                    <form asp-action="Delete" asp-route-id="@order.MaDonHang" method="post" class="d-inline"
+                                          onsubmit="return confirm('Bạn có chắc muốn xóa đơn hàng #DH@(order.MaDonHang.ToString("D3"))?');">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="btn-action btn-action-delete" title="Xóa">
+                                            <i class="bi bi-trash-fill"></i>
+                                        </button>
+                                    </form>
+                                }
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+    <div class="pagination-info">
+        @await Html.PartialAsync("_Pagination", (object)Model)
+    </div>
+</div>
+
+

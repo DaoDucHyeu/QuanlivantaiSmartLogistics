@@ -1,0 +1,217 @@
+@model SmartLogistics.Models.ViewModels.OrderFormViewModel
+@{
+    ViewData["Title"] = "Chỉnh sửa đơn hàng";
+    Layout = "~/Views/Shared/_LayoutDieuHanh.cshtml";
+}
+
+<div class="page-title">
+    <h2><i class="bi bi-pencil-square me-2"></i>Chỉnh sửa đơn hàng #DH@(Model.MaDonHang.ToString("D3"))</h2>
+    <a asp-action="Index" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i> Quay lại
+    </a>
+</div>
+
+<div class="card data-card">
+    <div class="card-body p-4">
+        <form asp-action="Edit" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="MaDonHang" />
+            <div asp-validation-summary="All" class="alert alert-danger alert-custom" style="display: @(ViewData.ModelState.ErrorCount > 0 ? "block" : "none")"></div>
+
+            <h6 class="text-muted mb-3"><i class="bi bi-person-circle me-1"></i> Thông tin khách hàng</h6>
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <label asp-for="MaKhachHang" class="form-label"></label>
+                    <select asp-for="MaKhachHang" class="form-select" asp-items="@(ViewBag.CustomerList as IEnumerable<SelectListItem>)"></select>
+                    <span asp-validation-for="MaKhachHang" class="text-danger small"></span>
+                </div>
+            </div>
+
+            <hr />
+            <h6 class="text-muted mb-3"><i class="bi bi-geo-alt me-1"></i> Thông tin vận chuyển</h6>
+            <div class="row g-3 mb-4">
+                <!-- Map Điểm Đi -->
+                <div class="col-md-6 mb-3">
+                    <label asp-for="DiemDi" class="form-label">Địa chỉ lấy hàng</label>
+                    <div class="input-group mb-2">
+                        <input asp-for="DiemDi" id="DiemDiAddress" class="form-control" placeholder="Nhập địa chỉ lấy hàng" />
+                        <button type="button" class="btn btn-outline-secondary" onclick="searchAddress('DiemDiAddress', mapDiemDi, markerDiemDi, 'DiemDiLat', 'DiemDiLng')">
+                            <i class="bi bi-search"></i> Tìm
+                        </button>
+                    </div>
+                    <span asp-validation-for="DiemDi" class="text-danger small"></span>
+                    
+                    <div id="map-diem-di" style="height: 300px; width: 100%; border-radius: 8px; border: 1px solid #ced4da;"></div>
+                    
+                    <!-- Hidden Lat/Lng Inputs -->
+                    <div class="row mt-2 g-2">
+                         <div class="col-6">
+                            <input asp-for="DiemDiLat" id="DiemDiLat" class="form-control form-control-sm text-muted bg-light" placeholder="Vĩ độ (Lat)" readonly />
+                         </div>
+                         <div class="col-6">
+                            <input asp-for="DiemDiLng" id="DiemDiLng" class="form-control form-control-sm text-muted bg-light" placeholder="Kinh độ (Lng)" readonly />
+                         </div>
+                    </div>
+                </div>
+
+                <!-- Map Điểm Đến -->
+                <div class="col-md-6 mb-3">
+                    <label asp-for="DiemDen" class="form-label">Địa chỉ giao hàng</label>
+                    <div class="input-group mb-2">
+                        <input asp-for="DiemDen" id="DiemDenAddress" class="form-control" placeholder="Nhập địa chỉ giao hàng" />
+                        <button type="button" class="btn btn-outline-secondary" onclick="searchAddress('DiemDenAddress', mapDiemDen, markerDiemDen, 'DiemDenLat', 'DiemDenLng')">
+                            <i class="bi bi-search"></i> Tìm
+                        </button>
+                    </div>
+                    <span asp-validation-for="DiemDen" class="text-danger small"></span>
+                    
+                    <div id="map-diem-den" style="height: 300px; width: 100%; border-radius: 8px; border: 1px solid #ced4da;"></div>
+                    
+                    <!-- Hidden Lat/Lng Inputs -->
+                     <div class="row mt-2 g-2">
+                         <div class="col-6">
+                            <input asp-for="DiemDenLat" id="DiemDenLat" class="form-control form-control-sm text-muted bg-light" placeholder="Vĩ độ (Lat)" readonly />
+                         </div>
+                         <div class="col-6">
+                            <input asp-for="DiemDenLng" id="DiemDenLng" class="form-control form-control-sm text-muted bg-light" placeholder="Kinh độ (Lng)" readonly />
+                         </div>
+                    </div>
+                </div>
+            </div>
+
+            <hr />
+            <h6 class="text-muted mb-3"><i class="bi bi-clipboard-data me-1"></i> Chi tiết đơn hàng</h6>
+            <div class="row g-3 mb-4">
+                <div class="col-md-4">
+                    <label asp-for="KhoiLuong" class="form-label"></label>
+                    <input asp-for="KhoiLuong" class="form-control" step="0.1" />
+                    <span asp-validation-for="KhoiLuong" class="text-danger small"></span>
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="GiaCuoc" class="form-label"></label>
+                    <input asp-for="GiaCuoc" class="form-control" step="1000" />
+                    <span asp-validation-for="GiaCuoc" class="text-danger small"></span>
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="NgayGiaoHang" class="form-label"></label>
+                    <input asp-for="NgayGiaoHang" class="form-control" type="date" />
+                </div>
+                <div class="col-12">
+                    <label asp-for="GhiChu" class="form-label"></label>
+                    <textarea asp-for="GhiChu" class="form-control" rows="3"></textarea>
+                </div>
+            </div>
+
+            <hr />
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary px-4"><i class="bi bi-check-lg me-1"></i> Cập nhật</button>
+                <a asp-action="Index" class="btn btn-outline-secondary px-4">Hủy</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    
+    <script>
+        // Lấy tọa độ hiện tại từ Model (hoặc dùng mặc định nếu trống)
+        const initDiLat = @(Model.DiemDiLat != 0 ? Model.DiemDiLat.ToString(System.Globalization.CultureInfo.InvariantCulture) : "21.0285");
+        const initDiLng = @(Model.DiemDiLng != 0 ? Model.DiemDiLng.ToString(System.Globalization.CultureInfo.InvariantCulture) : "105.7823");
+        
+        const initDenLat = @(Model.DiemDenLat != 0 ? Model.DiemDenLat.ToString(System.Globalization.CultureInfo.InvariantCulture) : "21.0285");
+        const initDenLng = @(Model.DiemDenLng != 0 ? Model.DiemDenLng.ToString(System.Globalization.CultureInfo.InvariantCulture) : "105.7823");
+
+        // --- Khởi tạo Map Tọa độ lấy hàng (Điểm Đi) ---
+        const mapDiemDi = L.map('map-diem-di').setView([initDiLat, initDiLng], 14);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(mapDiemDi);
+
+        let markerDiemDi = L.marker([initDiLat, initDiLng], { draggable: true }).addTo(mapDiemDi);
+        
+        // Sự kiện khi kéo thả marker Điểm Đi
+        markerDiemDi.on('dragend', function (event) {
+            var position = markerDiemDi.getLatLng();
+            document.getElementById('DiemDiLat').value = position.lat.toFixed(6);
+            document.getElementById('DiemDiLng').value = position.lng.toFixed(6);
+        });
+
+        // Sự kiện click lên bản đồ Điểm Đi
+        mapDiemDi.on('click', function(e) {
+            markerDiemDi.setLatLng(e.latlng);
+            document.getElementById('DiemDiLat').value = e.latlng.lat.toFixed(6);
+            document.getElementById('DiemDiLng').value = e.latlng.lng.toFixed(6);
+        });
+
+        // --- Khởi tạo Map Tọa độ giao hàng (Điểm Đến) ---
+        const mapDiemDen = L.map('map-diem-den').setView([initDenLat, initDenLng], 14);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(mapDiemDen);
+
+        let markerDiemDen = L.marker([initDenLat, initDenLng], { draggable: true }).addTo(mapDiemDen);
+
+        // Sự kiện khi kéo thả marker Điểm Đến
+        markerDiemDen.on('dragend', function (event) {
+            var position = markerDiemDen.getLatLng();
+            document.getElementById('DiemDenLat').value = position.lat.toFixed(6);
+            document.getElementById('DiemDenLng').value = position.lng.toFixed(6);
+        });
+        
+        // Sự kiện click lên bản đồ Điểm Đến
+        mapDiemDen.on('click', function(e) {
+            markerDiemDen.setLatLng(e.latlng);
+            document.getElementById('DiemDenLat').value = e.latlng.lat.toFixed(6);
+            document.getElementById('DiemDenLng').value = e.latlng.lng.toFixed(6);
+        });
+
+        // Hàm tìm kiếm địa chỉ qua Nominatim API (OpenStreetMap)
+        function searchAddress(inputId, mapInstance, markerInstance, latInputId, lngInputId) {
+            const query = document.getElementById(inputId).value;
+            if (!query) return;
+
+            const btn = document.querySelector(`#${inputId}`).nextElementSibling;
+            const originalHtml = btn.innerHTML;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>';
+            btn.disabled = true;
+
+            fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data && data.length > 0) {
+                        const lat = parseFloat(data[0].lat);
+                        const lon = parseFloat(data[0].lon);
+                        const newLatLng = new L.LatLng(lat, lon);
+                        
+                        mapInstance.setView(newLatLng, 15);
+                        markerInstance.setLatLng(newLatLng);
+                        
+                        document.getElementById(latInputId).value = lat.toFixed(6);
+                        document.getElementById(lngInputId).value = lon.toFixed(6);
+                    } else {
+                        alert("Không tìm thấy địa điểm này trên bản đồ.");
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching geocoding API:', error);
+                })
+                .finally(() => {
+                    btn.innerHTML = originalHtml;
+                    btn.disabled = false;
+                });
+        }
+        
+        // Fix lỗi bản đồ Leaflet không load hết tiles khi nằm trong container động
+        setTimeout(function(){ 
+           mapDiemDi.invalidateSize(); 
+           mapDiemDen.invalidateSize(); 
+        }, 500);
+    </script>
+    <partial name="_ValidationScriptsPartial" />
+}
+
+

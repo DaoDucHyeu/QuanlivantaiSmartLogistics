@@ -1,0 +1,315 @@
+@model SmartLogistics.Models.Trip
+@using SmartLogistics.Models
+@{
+    ViewData["Title"] = $"Chi tiết chuyến #CD{Model.MaChuyenDi:D3}";
+    Layout = "~/Views/Shared/_DriverLayout.cshtml";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
+}
+
+<!-- Trip Header Card -->
+<div class="trip-header-card">
+    <div class="d-flex justify-content-between align-items-start">
+        <div class="trip-id">#CD@(Model.MaChuyenDi.ToString("D3"))</div>
+        <span class="badge bg-light text-dark rounded-pill">
+            @(Model.TrangThai switch { TripStatus.ChuaBatDau => "Chưa bắt đầu", TripStatus.DangThucHien => "Đang thực hiện", TripStatus.HoanThanh => "Hoàn thành", _ => "—" })
+        </span>
+    </div>
+    <div class="trip-route mt-1">
+        <i class="bi bi-clock me-1"></i> @Model.ThoiGianBatDau.ToString("dd/MM/yyyy HH:mm")
+        @if (Model.ThoiGianKetThuc.HasValue)
+        {
+            <span>→ @Model.ThoiGianKetThuc.Value.ToString("HH:mm")</span>
+        }
+    </div>
+</div>
+
+<!-- Vehicle Stats Row -->
+<div class="vehicle-stats">
+    <div class="vs-item">
+        <div class="vs-value">@(Model.Xe?.BienSo ?? "—")</div>
+        <div class="vs-label">Biển số</div>
+    </div>
+    <div class="vs-item">
+        <div class="vs-value">@(Model.TongKhoangCach > 0 ? Model.TongKhoangCach.ToString("N0") + " km" : "—")</div>
+        <div class="vs-label">Khoảng cách</div>
+    </div>
+    <div class="vs-item">
+        <div class="vs-value">@Model.TripDetails.Count</div>
+        <div class="vs-label">Đơn hàng</div>
+    </div>
+</div>
+
+@{
+    var waypoints = new List<object>();
+    foreach(var td in Model.TripDetails.OrderBy(t => t.ThuTu).Where(t => t.TrangThai == TripDetailStatus.DangLayHang)) {
+        if(td.DonHang != null) {
+            waypoints.Add(new { lat = td.DonHang.DiemDiLat, lng = td.DonHang.DiemDiLng, type = "Lấy", id = td.MaDonHang });
+        }
+    }
+    foreach(var td in Model.TripDetails.OrderBy(t => t.ThuTu).Where(t => t.TrangThai == TripDetailStatus.DangLayHang || t.TrangThai == TripDetailStatus.DangGiao)) {
+        if(td.DonHang != null) {
+            waypoints.Add(new { lat = td.DonHang.DiemDenLat, lng = td.DonHang.DiemDenLng, type = "Giao", id = td.MaDonHang });
+        }
+    }
+    var waypointsJson = System.Text.Json.JsonSerializer.Serialize(waypoints);
+}
+
+@if (waypoints.Count > 0 && Model.TrangThai == TripStatus.DangThucHien)
+{
+    <div class="mb-3" style="background:#fff; border-radius:12px; padding: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+        <h6 class="fw-bold mb-2 text-primary" style="font-size:0.85rem;"><i class="bi bi-map-fill"></i> Bản đồ dẫn đường toàn chuyến</h6>
+        <div id="driverRouteMap" style="height: 350px; border-radius:10px; width: 100%; border: 1px solid #e2e8f0; z-index: 1;" 
+             data-waypoints='@Html.Raw(waypointsJson)'></div>
+    </div>
+}
+
+<!-- Delivery Checklist -->
+<div class="section-title">
+    <i class="bi bi-list-check"></i> Danh sách giao hàng
+</div>
+
+@foreach (var td in Model.TripDetails.OrderBy(td => td.ThuTu))
+{
+    var (cardBorder, tdBadgeClass, tdStatusText) = td.TrangThai switch
+    {
+        TripDetailStatus.DangLayHang => ("border-warning", "bg-warning text-dark", "Đang tới lấy hàng"),
+        TripDetailStatus.DangGiao => ("delivery-active", "bg-primary", "Đang đi giao"),
+        TripDetailStatus.DaGiao => ("delivery-done", "bg-success", "Đã giao xong"),
+        _ => ("", "bg-secondary", "Chờ xử lý")
+    };
+
+    <div class="delivery-card @cardBorder">
+        <div class="delivery-header">
+            <strong>#DH@(td.MaDonHang.ToString("D3"))</strong>
+            <span class="badge @tdBadgeClass rounded-pill" style="font-size: 0.7rem;">@tdStatusText</span>
+        </div>
+        <div class="delivery-customer">
+            <i class="bi bi-person-fill me-1" style="color: #64748b;"></i>
+            @(td.DonHang?.KhachHang?.TenKhachHang ?? "—")
+        </div>
+
+        @if (td.DonHang != null)
+        {
+            <div class="delivery-address">
+                <i class="bi bi-shop me-1 text-warning"></i> @td.DonHang.DiemDi 
+                <br />
+                <i class="bi bi-geo-alt me-1 mt-1 text-primary"></i> @td.DonHang.DiemDen
+            </div>
+            <div class="delivery-weight mt-1">
+                <i class="bi bi-box me-1"></i> @td.DonHang.KhoiLuong.ToString("N0") kg
+            </div>
+        }
+
+        @if (td.TrangThai == TripDetailStatus.DaGiao && td.ThoiGianGiao.HasValue)
+        {
+            <div class="mt-2" style="font-size: 0.78rem; color: #22c55e;">
+                <i class="bi bi-check-circle-fill me-1"></i> Lấy hàng lúc: @(td.ThoiGianLayHang?.ToString("HH:mm") ?? "—") 
+                <br/>
+                <i class="bi bi-check-circle-fill me-1"></i> Giao xong lúc: @td.ThoiGianGiao.Value.ToString("HH:mm")
+            </div>
+        }
+
+        @if (Model.TrangThai == TripStatus.DangThucHien)
+        {
+            @if (td.TrangThai == TripDetailStatus.DangLayHang)
+            {
+                <form asp-action="ConfirmPickup" method="post" class="mt-2"
+                      onsubmit="return confirm('Xác nhận ĐÃ LẤY HÀNG cho đơn #DH@(td.MaDonHang.ToString("D3"))?');">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="tripDetailId" value="@td.MaChiTietChuyen" />
+                    <button type="submit" class="btn btn-sm w-100" style="background-color: #f59e0b; color: white; border-radius: 10px; font-weight: 600;">
+                        <i class="bi bi-box-arrow-in-down me-1"></i> Đã tới nơi & Nhận hàng
+                    </button>
+                </form>
+            }
+            else if (td.TrangThai == TripDetailStatus.DangGiao)
+            {
+                <form asp-action="ConfirmDelivery" method="post" class="mt-2"
+                      onsubmit="return confirm('Xác nhận ĐÃ GIAO HÀNG TẬN TAY đơn #DH@(td.MaDonHang.ToString("D3"))?');">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="tripDetailId" value="@td.MaChiTietChuyen" />
+                    <button type="submit" class="btn btn-sm btn-primary w-100" style="border-radius: 10px; font-weight: 600;">
+                        <i class="bi bi-check-lg me-1"></i> Hoàn thành giao hàng
+                    </button>
+                </form>
+            }
+        }
+    </div>
+}
+
+<!-- Spacer for sticky actions -->
+<div style="height: 80px;"></div>
+
+<!-- Sticky Bottom Actions -->
+@if (Model.TrangThai != TripStatus.HoanThanh)
+{
+    <div class="sticky-actions">
+        @if (Model.TrangThai == TripStatus.ChuaBatDau)
+        {
+            <form asp-action="StartTrip" asp-route-id="@Model.MaChuyenDi" method="post" class="flex-fill"
+                  onsubmit="return confirm('Xác nhận bạn đã sẵn sàng bắt đầu chuyến đi này?');">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="btn-driver btn-driver-success w-100">
+                    <i class="bi bi-play-fill me-1"></i> Sẵn sàng bắt đầu
+                </button>
+            </form>
+        }
+        @if (Model.TrangThai == TripStatus.DangThucHien)
+        {
+            var isAllDone = Model.TripDetails.All(td => td.TrangThai == TripDetailStatus.DaGiao);
+
+            <a asp-action="ReportIncident" asp-route-tripId="@Model.MaChuyenDi"
+               class="btn-driver btn-driver-danger-outline" style="flex: 0 0 auto; width: auto; padding: 12px 16px;">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+            </a>
+            
+            @if (isAllDone)
+            {
+                <form asp-action="CompleteTrip" asp-route-id="@Model.MaChuyenDi" method="post" class="flex-fill"
+                      onsubmit="return confirm('Hoàn thành chuyến đi này?');">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn-driver btn-driver-primary w-100">
+                        <i class="bi bi-check-lg me-1"></i> Kết thúc chuyến
+                    </button>
+                </form>
+            }
+            else
+            {
+                <button type="button" class="btn-driver btn-driver-primary w-100 opacity-50" style="flex: 1;" onclick="alert('Vui lòng THỰC HIỆN XONG tất cả các đơn hàng trước khi kết thúc chuyến đi!')">
+                    <i class="bi bi-lock-fill me-1"></i> Chưa Giao/Nhận xong
+                </button>
+            }
+        }
+    </div>
+}
+
+@section Scripts {
+    @if (Model.TrangThai == TripStatus.DangThucHien)
+    {
+        <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+        <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
+        
+        <script>
+            $(document).ready(function () {
+                let watchId = null;
+                const tripId = @Model.MaChuyenDi;
+
+                // Map Setup
+                const mapContainer = document.getElementById("driverRouteMap");
+                let map = null;
+                let userMarker = null;
+                let routingControl = null;
+                
+                if (mapContainer) {
+                    map = L.map('driverRouteMap').setView([21.0285, 105.7823], 12);
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18 }).addTo(map);
+
+                    // Vẽ Route ngay lập tức từ danh sách điểm đến/lấy hàng
+                    const wpsData = mapContainer.dataset.waypoints;
+                    let wps = [];
+                    if (wpsData) {
+                        wps = JSON.parse(wpsData);
+                        if (wps.length > 0) {
+                            const routingPoints = [];
+                            wps.forEach(w => routingPoints.push(L.latLng(w.lat, w.lng)));
+                            
+                            routingControl = L.Routing.control({
+                                waypoints: routingPoints,
+                                routeWhileDragging: false,
+                                addWaypoints: false,
+                                show: true, // Hiển thị panel text chỉ đường
+                                fitSelectedRoutes: true,
+                                createMarker: function(i, wp, nWps) {
+                                    // Nếu waypoints đang có độ dài lớn hơn số điểm đơn hàng => đã có điểm GPS
+                                    let isGpsIncluded = routingControl && routingControl.getWaypoints().length > wps.length;
+                                    
+                                    if (isGpsIncluded && i === 0) return null; // Vị trí GPS (đã có userMarker)
+                                    
+                                    // Index của điểm đơn hàng
+                                    let wIndex = isGpsIncluded ? i - 1 : i;
+                                    const wInfo = wps[wIndex]; 
+                                    const lbl = wInfo ? `${wInfo.type} đơn #${wInfo.id}` : `Điểm ${i+1}`;
+                                    const targetIcon = L.divIcon({
+                                        html: '<div style="background:#22c55e;color:#fff;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,0.3);font-size:0.7rem;font-weight:bold;">'+(wIndex+1)+'</div>',
+                                        className: '', iconSize: [24, 24], iconAnchor: [12, 12]
+                                    });
+                                    return L.marker(wp.latLng, {icon: targetIcon}).bindTooltip(lbl, {permanent: true, direction: "top", offset: [0, -15], className: 'fw-bold'});
+                                }
+                            }).addTo(map);
+                        }
+                    }
+                }
+
+                const connection = new signalR.HubConnectionBuilder()
+                    .withUrl("/trackingHub")
+                    .withAutomaticReconnect([0, 2000, 5000, 10000, 30000])
+                    .build();
+
+                async function startTracking() {
+                    try {
+                        await connection.start();
+                        console.log("Đã kết nối SignalR.");
+
+                        if ("geolocation" in navigator) {
+                            console.log("Bắt đầu theo dõi GPS...");
+                            watchId = navigator.geolocation.watchPosition(
+                                (position) => {
+                                    const lat = position.coords.latitude;
+                                    const lng = position.coords.longitude;
+                                    const speed = position.coords.speed ? parseFloat((position.coords.speed * 3.6).toFixed(1)) : 0;
+
+                                    if (mapContainer && map) {
+                                        if (!userMarker) {
+                                            const driverIcon = L.divIcon({
+                                                html: '<div style="background:#2563eb;color:#fff;width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,0.3);"><i class="bi bi-truck"></i></div>',
+                                                className: '',
+                                                iconSize: [30, 30],
+                                                iconAnchor: [15, 15]
+                                            });
+                                            userMarker = L.marker([lat, lng], { icon: driverIcon }).addTo(map);
+                                            
+                                            // Cập nhật lại đường đi từ vị trí hiện tại
+                                            if (routingControl) {
+                                                const wpsData = mapContainer.dataset.waypoints;
+                                                const wps = JSON.parse(wpsData);
+                                                const newWps = [L.latLng(lat, lng)];
+                                                wps.forEach(w => newWps.push(L.latLng(w.lat, w.lng)));
+                                                routingControl.setWaypoints(newWps);
+                                            }
+                                        } else {
+                                            userMarker.setLatLng([lat, lng]);
+                                        }
+                                    }
+
+                                    connection.invoke("SendLocation", tripId, lat, lng, speed)
+                                        .catch(err => console.error("Lỗi khi gửi vị trí:", err));
+                                },
+                                (err) => {
+                                    console.warn("Lỗi GPS:", err.message);
+                                },
+                                { enableHighAccuracy: true, maximumAge: 10000, timeout: 20000 }
+                            );
+                        } else {
+                            console.error("Trình duyệt không hỗ trợ Geolocation.");
+                        }
+
+                    } catch (err) {
+                        console.error("SignalR Connection Error: ", err);
+                        setTimeout(startTracking, 5000);
+                    }
+                }
+
+                window.addEventListener('beforeunload', () => {
+                   if (watchId !== null) navigator.geolocation.clearWatch(watchId);
+                });
+
+                startTracking();
+            });
+        </script>
+    }
+}

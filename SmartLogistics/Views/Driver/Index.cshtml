@@ -1,0 +1,106 @@
+@model SmartLogistics.Models.ViewModels.DriverDashboardViewModel
+@using SmartLogistics.Models
+@{
+    ViewData["Title"] = "Trang chủ";
+    Layout = "~/Views/Shared/_DriverLayout.cshtml";
+}
+
+<!-- Driver Info Card -->
+<div class="driver-info-card">
+    <div class="driver-avatar">@Model.DriverName.Substring(0, 1).ToUpper()</div>
+    <div>
+        <div class="driver-name">Xin chào, @Model.DriverName!</div>
+        <span class="driver-role">Tài xế</span>
+        @if (!string.IsNullOrEmpty(Model.VehiclePlate))
+        {
+            <div class="driver-plate"><i class="bi bi-credit-card-2-front me-1"></i> @Model.VehiclePlate</div>
+        }
+    </div>
+</div>
+
+<!-- Stats Grid -->
+<div class="stats-grid">
+    <div class="stat-mini stat-blue">
+        <div class="stat-number">@Model.TripsToday</div>
+        <div class="stat-label">Chuyến hôm nay</div>
+    </div>
+    <div class="stat-mini stat-orange">
+        <div class="stat-number">@Model.InProgressTrips</div>
+        <div class="stat-label">Đang thực hiện</div>
+    </div>
+    <div class="stat-mini stat-green">
+        <div class="stat-number">@Model.CompletedTrips</div>
+        <div class="stat-label">Hoàn thành</div>
+    </div>
+    <div class="stat-mini stat-red">
+        <div class="stat-number">@Model.IncidentCount</div>
+        <div class="stat-label">Sự cố</div>
+    </div>
+</div>
+
+<!-- Current Trip -->
+@if (Model.CurrentTrip != null)
+{
+    <div class="section-title"><i class="bi bi-play-circle-fill text-primary"></i> Chuyến đi hiện tại</div>
+    <a asp-action="TripDetail" asp-route-id="@Model.CurrentTrip.MaChuyenDi" class="text-decoration-none">
+        <div class="trip-card trip-active">
+            <div class="trip-header">
+                <span class="trip-code">#CD@(Model.CurrentTrip.MaChuyenDi.ToString("D3"))</span>
+                <span class="badge bg-primary rounded-pill">Đang thực hiện</span>s
+            </div>
+            <div class="trip-meta">
+                <div class="trip-meta-item">
+                    <i class="bi bi-geo-alt-fill"></i>
+                    <span>@(Model.CurrentTrip.Xe?.BienSo ?? "—")</span>
+                </div>
+                <div class="trip-meta-item">
+                    <i class="bi bi-clock"></i>
+                    <span>@Model.CurrentTrip.ThoiGianBatDau.ToString("dd/MM/yyyy HH:mm")</span>
+                </div>
+                <div class="trip-meta-item">
+                    <i class="bi bi-box-seam"></i>
+                    <span>@Model.CurrentTrip.TripDetails.Count đơn hàng</span>
+                </div>
+            </div>
+            <div class="mt-2 text-end">
+                <span class="text-primary" style="font-size: 0.82rem; font-weight: 600;">Xem chi tiết <i class="bi bi-arrow-right"></i></span>
+            </div>
+        </div>
+    </a>
+}
+
+<!-- Upcoming Trips -->
+@if (Model.UpcomingTrips.Any())
+{
+    <div class="section-title mt-3"><i class="bi bi-calendar-event"></i> Chuyến đi sắp tới</div>
+    @foreach (var trip in Model.UpcomingTrips)
+    {
+        <a asp-action="TripDetail" asp-route-id="@trip.MaChuyenDi" class="text-decoration-none">
+            <div class="trip-card trip-pending">
+                <div class="trip-header">
+                    <span class="trip-code">#CD@(trip.MaChuyenDi.ToString("D3"))</span>
+                    <span class="badge bg-secondary rounded-pill">Chưa bắt đầu</span>
+                </div>
+                <div class="trip-meta">
+                    <div class="trip-meta-item">
+                        <i class="bi bi-clock"></i>
+                        <span>@trip.ThoiGianBatDau.ToString("dd/MM/yyyy HH:mm")</span>
+                    </div>
+                    <div class="trip-meta-item">
+                        <i class="bi bi-box-seam"></i>
+                        <span>@trip.TripDetails.Count đơn hàng</span>
+                    </div>
+                </div>
+            </div>
+        </a>
+    }
+}
+
+<!-- No trips -->
+@if (Model.CurrentTrip == null && !Model.UpcomingTrips.Any())
+{
+    <div class="text-center text-muted py-5">
+        <i class="bi bi-check-circle fs-1 d-block mb-2"></i>
+        <p>Không có chuyến đi nào hôm nay</p>
+    </div>
+}

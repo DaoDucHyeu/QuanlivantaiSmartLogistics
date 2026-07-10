@@ -1,0 +1,98 @@
+@using SmartLogistics.Helpers
+@model dynamic
+
+@{
+    int pageIndex = (int)Model.PageIndex;
+    int totalPages = (int)Model.TotalPages;
+    int totalCount = (int)Model.TotalCount;
+    bool hasPrev = (bool)Model.HasPreviousPage;
+    bool hasNext = (bool)Model.HasNextPage;
+    string action = ViewData["PaginationAction"]?.ToString() ?? "Index";
+}
+
+@if (totalPages > 1)
+{
+    <nav aria-label="Pagination" class="mt-3">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <span class="text-muted" style="font-size: 0.85rem;">
+                Hiển thị <strong>@((pageIndex - 1) * (int)Model.PageSize + 1)–@(Math.Min(pageIndex * (int)Model.PageSize, totalCount))</strong>
+                trong tổng số <strong>@totalCount</strong> bản ghi
+            </span>
+            <ul class="pagination pagination-sm mb-0">
+                @* Previous *@
+                <li class="page-item @(hasPrev ? "" : "disabled")">
+                    <a class="page-link" asp-action="@action" asp-all-route-data="@GetRouteData(pageIndex - 1)">
+                        <i class="bi bi-chevron-left"></i>
+                    </a>
+                </li>
+
+                @* Page numbers *@
+                @{
+                    int startPage = Math.Max(1, pageIndex - 2);
+                    int endPage = Math.Min(totalPages, pageIndex + 2);
+
+                    if (startPage > 1)
+                    {
+                        <li class="page-item">
+                            <a class="page-link" asp-action="@action" asp-all-route-data="@GetRouteData(1)">1</a>
+                        </li>
+                        if (startPage > 2)
+                        {
+                            <li class="page-item disabled"><span class="page-link">…</span></li>
+                        }
+                    }
+
+                    for (int i = startPage; i <= endPage; i++)
+                    {
+                        <li class="page-item @(i == pageIndex ? "active" : "")">
+                            <a class="page-link" asp-action="@action" asp-all-route-data="@GetRouteData(i)">@i</a>
+                        </li>
+                    }
+
+                    if (endPage < totalPages)
+                    {
+                        if (endPage < totalPages - 1)
+                        {
+                            <li class="page-item disabled"><span class="page-link">…</span></li>
+                        }
+                        <li class="page-item">
+                            <a class="page-link" asp-action="@action" asp-all-route-data="@GetRouteData(totalPages)">@totalPages</a>
+                        </li>
+                    }
+                }
+
+                @* Next *@
+                <li class="page-item @(hasNext ? "" : "disabled")">
+                    <a class="page-link" asp-action="@action" asp-all-route-data="@GetRouteData(pageIndex + 1)">
+                        <i class="bi bi-chevron-right"></i>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+}
+
+@functions {
+    Dictionary<string, string> GetRouteData(int page)
+    {
+        var routeData = new Dictionary<string, string> { { "page", page.ToString() } };
+
+        // Preserve current filter parameters
+        if (ViewData["CurrentSearch"] is string search && !string.IsNullOrEmpty(search))
+            routeData["search"] = search;
+        if (ViewData["CurrentStatus"] != null)
+            routeData["status"] = ViewData["CurrentStatus"]!.ToString()!;
+        if (ViewData["CurrentFromDate"] is DateTime fromDate)
+            routeData["fromDate"] = fromDate.ToString("yyyy-MM-dd");
+        if (ViewData["CurrentToDate"] is DateTime toDate)
+            routeData["toDate"] = toDate.ToString("yyyy-MM-dd");
+        if (ViewData["CurrentRole"] != null)
+            routeData["role"] = ViewData["CurrentRole"]!.ToString()!;
+        if (ViewData["CurrentLoaiXe"] is string loaiXe && !string.IsNullOrEmpty(loaiXe))
+            routeData["loaiXe"] = loaiXe;
+        if (ViewData["CurrentFilter"] is string filter && !string.IsNullOrEmpty(filter))
+            routeData["filter"] = filter;
+
+        return routeData;
+    }
+}

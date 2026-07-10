@@ -1,0 +1,160 @@
+@model SmartLogistics.Helpers.PaginatedList<SmartLogistics.Models.Vehicle>
+@using SmartLogistics.Models
+@{
+    ViewData["Title"] = "Quản lý Phương tiện";
+    Layout = "~/Views/Shared/_LayoutDieuHanh.cshtml";
+}
+
+<!-- Stat Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="card stat-card">
+            <div class="card-body">
+                <div class="stat-info">
+                    <p>Tổng số xe</p>
+                    <h3>@ViewBag.TotalVehicles</h3>
+                </div>
+                <div class="stat-icon bg-primary-light">
+                    <i class="bi bi-truck"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card stat-card">
+            <div class="card-body">
+                <div class="stat-info">
+                    <p>Đang hoạt động</p>
+                    <h3>@ViewBag.ActiveVehicles</h3>
+                </div>
+                <div class="stat-icon bg-success-light">
+                    <i class="bi bi-check-circle-fill"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card stat-card">
+            <div class="card-body">
+                <div class="stat-info">
+                    <p>Đang bảo trì</p>
+                    <h3>@ViewBag.MaintenanceVehicles</h3>
+                </div>
+                <div class="stat-icon bg-warning-light">
+                    <i class="bi bi-wrench-adjustable"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="page-title">
+    <h2><i class="bi bi-truck me-2"></i>Quản lý Phương tiện</h2>
+    <a asp-action="Create" class="btn btn-success">
+        <i class="bi bi-plus-lg me-1"></i> Thêm xe
+    </a>
+</div>
+
+<!-- Filter Bar -->
+<div class="filter-bar">
+    <form asp-action="Index" method="get" class="d-flex align-items-center gap-2 flex-wrap w-100">
+        <input type="text" name="search" class="form-control" style="max-width: 250px;"
+               placeholder="Tìm kiếm theo biển số..." value="@ViewBag.Search" />
+        <select name="status" class="form-select" style="max-width: 180px;">
+            <option value="">-- Trạng thái --</option>
+            <option value="@VehicleStatus.SanSang" selected="@(ViewBag.Status == VehicleStatus.SanSang)">Sẵn sàng</option>
+            <option value="@VehicleStatus.DangDi" selected="@(ViewBag.Status == VehicleStatus.DangDi)">Đang đi</option>
+            <option value="@VehicleStatus.BaoTri" selected="@(ViewBag.Status == VehicleStatus.BaoTri)">Bảo trì</option>
+        </select>
+        <button type="submit" class="btn btn-primary">
+            <i class="bi bi-search me-1"></i> Tìm kiếm
+        </button>
+        @if (!string.IsNullOrEmpty(ViewBag.Search as string) || ViewBag.Status != null)
+        {
+            <a asp-action="Index" class="btn btn-outline-secondary">
+                <i class="bi bi-x-lg me-1"></i> Xóa lọc
+            </a>
+        }
+    </form>
+</div>
+
+<!-- Data Table -->
+<div class="card data-card">
+    <div class="table-responsive">
+        <table class="table table-dashboard">
+            <thead>
+                <tr>
+                    <th style="width: 50px;">#</th>
+                    <th>Biển số</th>
+                    <th>Loại xe</th>
+                    <th>Trọng tải (tấn)</th>
+                    <th>Tài xế phụ trách</th>
+                    <th>Trạng thái</th>
+                    <th>Ngày đăng ký</th>
+                    <th style="width: 120px;">Hành động</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Count == 0)
+                {
+                    <tr>
+                        <td colspan="8" class="text-center text-muted py-4">
+                            <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                            Không tìm thấy phương tiện nào
+                        </td>
+                    </tr>
+                }
+                else
+                {
+                    var stt = (Model.PageIndex - 1) * Model.PageSize + 1;
+                    @foreach (var vehicle in Model)
+                    {
+                        var (badgeClass, statusName) = vehicle.TrangThai switch
+                        {
+                            VehicleStatus.SanSang => ("badge-sansang", "Sẵn sàng"),
+                            VehicleStatus.DangDi => ("badge-dangdi", "Đang đi"),
+                            VehicleStatus.BaoTri => ("badge-baotri", "Bảo trì"),
+                            _ => ("bg-secondary", "Không rõ")
+                        };
+                        <tr>
+                            <td>@stt</td>
+                            <td><strong>@vehicle.BienSo</strong></td>
+                            <td>@(vehicle.LoaiXe ?? "—")</td>
+                            <td>@vehicle.TrongTai</td>
+                            <td>
+                                @if (vehicle.TaiXe != null)
+                                {
+                                    @vehicle.TaiXe.FullName
+                                }
+                                else
+                                {
+                                    <span class="text-muted fst-italic">Chưa gán</span>
+                                }
+                            </td>
+                            <td><span class="badge-status @badgeClass">@statusName</span></td>
+                            <td>@vehicle.NgayDangKy.ToString("dd/MM/yyyy")</td>
+                            <td>
+                                <a asp-action="Edit" asp-route-id="@vehicle.MaXe" class="btn-action btn-action-edit" title="Chỉnh sửa">
+                                    <i class="bi bi-pencil-fill"></i>
+                                </a>
+                                <form asp-action="Delete" asp-route-id="@vehicle.MaXe" method="post" class="d-inline"
+                                      onsubmit="return confirm('Bạn có chắc muốn xóa xe @vehicle.BienSo?');">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn-action btn-action-delete" title="Xóa">
+                                        <i class="bi bi-trash-fill"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        stt++;
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+    <div class="pagination-info">
+        @await Html.PartialAsync("_Pagination", (object)Model)
+    </div>
+</div>
+
+

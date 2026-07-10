@@ -1,0 +1,112 @@
+@model SmartLogistics.Models.ViewModels.StaffCreateViewModel
+@using SmartLogistics.Models
+@{
+    ViewData["Title"] = "Thêm nhân sự";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+    ViewData["Breadcrumb"] = new List<(string Text, string Url)>
+    {
+        ("Admin", ""),
+        ("Quản lý Nhân sự", ""),
+        ("Thêm nhân sự", "")
+    };
+}
+
+<div class="page-title">
+    <h2><i class="bi bi-person-plus-fill me-2"></i>Thêm nhân sự mới</h2>
+    <a asp-action="Index" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i> Quay lại
+    </a>
+</div>
+
+<div class="card data-card">
+    <div class="card-body p-4">
+        <form asp-action="Create" method="post">
+            @Html.AntiForgeryToken()
+
+            <div asp-validation-summary="All" class="alert alert-danger alert-custom" style="display: @(ViewData.ModelState.ErrorCount > 0 ? "block" : "none")"></div>
+
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label asp-for="FullName" class="form-label"></label>
+                    <input asp-for="FullName" class="form-control" placeholder="Nhập họ và tên" />
+                    <span asp-validation-for="FullName" class="text-danger small"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="UserName" class="form-label"></label>
+                    <input asp-for="UserName" class="form-control" placeholder="Nhập tên đăng nhập" />
+                    <span asp-validation-for="UserName" class="text-danger small"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="Email" class="form-label"></label>
+                    <input asp-for="Email" class="form-control" placeholder="Nhập email" />
+                    <span asp-validation-for="Email" class="text-danger small"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="PhoneNumber" class="form-label"></label>
+                    <input asp-for="PhoneNumber" class="form-control" placeholder="Nhập số điện thoại" />
+                    <span asp-validation-for="PhoneNumber" class="text-danger small"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="Password" class="form-label"></label>
+                    <input asp-for="Password" class="form-control" placeholder="Nhập mật khẩu (tối thiểu 6 ký tự)" />
+                    <span asp-validation-for="Password" class="text-danger small"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="ConfirmPassword" class="form-label"></label>
+                    <input asp-for="ConfirmPassword" class="form-control" placeholder="Nhập lại mật khẩu" />
+                    <span asp-validation-for="ConfirmPassword" class="text-danger small"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="UserType" class="form-label"></label>
+                    <select asp-for="UserType" class="form-select" id="roleSelect">
+                        <option value="">-- Chọn vai trò --</option>
+                        <option value="@UserType.DieuHanh">Điều hành</option>
+                        <option value="@UserType.TaiXe">Tài xế</option>
+                        <option value="@UserType.KeToan">Kế toán</option>
+                    </select>
+                    <span asp-validation-for="UserType" class="text-danger small"></span>
+                </div>
+                <div class="col-md-6" id="DieuHanhSection" style="display: none;">
+                    <label asp-for="DieuHanhId" class="form-label"></label>
+                    <select asp-for="DieuHanhId" class="form-select" asp-items="@(ViewBag.DispatcherList as IEnumerable<SelectListItem>)">
+                        <option value="">-- Chọn Điều hành quản lý --</option>
+                    </select>
+                    <span asp-validation-for="DieuHanhId" class="text-danger small"></span>
+                </div>
+            </div>
+
+            <hr class="my-4" />
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary px-4">
+                    <i class="bi bi-check-lg me-1"></i> Lưu
+                </button>
+                <a asp-action="Index" class="btn btn-outline-secondary px-4">Hủy</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const roleSelect = document.getElementById('roleSelect');
+            const DieuHanhSection = document.getElementById('DieuHanhSection');
+
+            function toggleDieuHanhSection() {
+                // UserType.TaiXe enum value is 2
+                if (roleSelect.value === 'TaiXe' || roleSelect.value === '2') {
+                    DieuHanhSection.style.display = 'block';
+                } else {
+                    DieuHanhSection.style.display = 'none';
+                    document.getElementById('DieuHanhId').value = '';
+                }
+            }
+
+            roleSelect.addEventListener('change', toggleDieuHanhSection);
+            toggleDieuHanhSection(); // Run on load in case of validation errors
+        });
+    </script>
+}
+
+

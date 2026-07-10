@@ -1,0 +1,99 @@
+@model SmartLogistics.Models.ViewModels.VerifyOTPViewModel
+
+@{
+    ViewData["Title"] = "Xác nhận Email";
+}
+
+<style>
+    .verify-wrapper {
+        min-height: calc(100vh - 150px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 40px 16px;
+    }
+    .verify-card {
+        width: 100%;
+        max-width: 420px;
+        background: #fff;
+        border-radius: 20px;
+        box-shadow: 0 8px 40px rgba(0,0,0,0.08);
+        border: 1px solid #e2e8f0;
+        overflow: hidden;
+    }
+    .verify-header {
+        background: linear-gradient(135deg, #0f172a, #1e293b);
+        padding: 32px 32px 28px;
+        text-align: center;
+    }
+    .verify-header .verify-icon {
+        width: 56px; height: 56px;
+        background: linear-gradient(135deg, #2563eb, #06b6d4);
+        border-radius: 16px;
+        display: inline-flex; align-items: center; justify-content: center;
+        font-size: 1.5rem; color: #fff;
+        margin-bottom: 14px;
+    }
+    .verify-header h3 {
+        color: #fff; font-weight: 800; font-size: 1.3rem; margin: 0 0 4px;
+    }
+    .verify-header p {
+        color: rgba(255,255,255,0.7); font-size: 0.85rem; margin: 0;
+    }
+    .verify-body { padding: 28px 32px 32px; }
+    .verify-body .form-label {
+        font-weight: 600; font-size: 0.85rem; color: #334155;
+    }
+    .verify-body .form-control {
+        border-radius: 12px; padding: 11px 14px;
+        border: 1.5px solid #e2e8f0; font-size: 1.2rem;
+        letter-spacing: 0.5rem; text-align: center; font-weight: bold;
+        transition: border-color 0.2s;
+    }
+    .verify-body .form-control:focus {
+        border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+    }
+    .btn-verify {
+        width: 100%;
+        background: linear-gradient(135deg, #2563eb, #1d4ed8);
+        color: #fff; border: none;
+        padding: 12px; border-radius: 12px;
+        font-weight: 700; font-size: 0.95rem;
+        transition: all 0.2s;
+    }
+    .btn-verify:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 6px 20px rgba(37,99,235,0.35);
+        color: #fff;
+    }
+</style>
+
+<div class="verify-wrapper">
+    <div class="verify-card">
+        <div class="verify-header">
+            <div class="verify-icon"><i class="bi bi-envelope-check-fill"></i></div>
+            <h3>Xác thực Email</h3>
+            <p>Mã OTP đã được gửi đến <strong>@Model.Email</strong></p>
+        </div>
+        <div class="verify-body">
+            <form asp-action="VerifyOTP" method="post">
+                <input type="hidden" asp-for="Email" />
+                <div asp-validation-summary="All" class="text-danger mb-3" style="font-size:0.85rem;"></div>
+
+                <div class="mb-4">
+                    <label asp-for="Code" class="form-label text-center d-block">Nhập mã 6 số (OTP)</label>
+                    <input asp-for="Code" class="form-control" autocomplete="off" maxlength="6" autofocus />
+                    <span asp-validation-for="Code" class="text-danger d-block text-center mt-1" style="font-size:0.8rem;"></span>
+                </div>
+
+                <button type="submit" class="btn btn-verify">
+                    <i class="bi bi-shield-check me-2"></i>Xác thực và Đăng nhập
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

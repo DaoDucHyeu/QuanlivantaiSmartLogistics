@@ -1,0 +1,75 @@
+@model SmartLogistics.Models.ViewModels.VehicleFormViewModel
+@using SmartLogistics.Models
+@{
+    ViewData["Title"] = "Thêm phương tiện";
+    Layout = "~/Views/Shared/_LayoutDieuHanh.cshtml";
+}
+
+<div class="page-title">
+    <h2><i class="bi bi-truck me-2"></i>Thêm phương tiện mới</h2>
+    <a asp-action="Index" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i> Quay lại
+    </a>
+</div>
+
+<div class="card data-card">
+    <div class="card-body p-4">
+        <form asp-action="Create" method="post">
+            @Html.AntiForgeryToken()
+
+            <div asp-validation-summary="All" class="alert alert-danger alert-custom" style="display: @(ViewData.ModelState.ErrorCount > 0 ? "block" : "none")"></div>
+
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label asp-for="BienSo" class="form-label"></label>
+                    <input asp-for="BienSo" class="form-control" placeholder="Nhập biển số (VD: 29C-12345)" />
+                    <span asp-validation-for="BienSo" class="text-danger small"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="LoaiXe" class="form-label"></label>
+                    <select asp-for="LoaiXe" class="form-select">
+                        <option value="">-- Chọn loại xe --</option>
+                        <option value="Xe tải 1.5 tấn">Xe tải 1.5 tấn</option>
+                        <option value="Xe tải 2.5 tấn">Xe tải 2.5 tấn</option>
+                        <option value="Xe tải 3.5 tấn">Xe tải 3.5 tấn</option>
+                        <option value="Xe tải 5 tấn">Xe tải 5 tấn</option>
+                        <option value="Xe tải 7 tấn">Xe tải 7 tấn</option>
+                        <option value="Xe tải 10 tấn">Xe tải 10 tấn</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="TrongTai" class="form-label"></label>
+                    <input asp-for="TrongTai" class="form-control" placeholder="Nhập trọng tải (tấn)" step="0.1" />
+                    <span asp-validation-for="TrongTai" class="text-danger small"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="TaiXeId" class="form-label"></label>
+                    <select asp-for="TaiXeId" class="form-select" asp-items="@(ViewBag.DriverList as IEnumerable<SelectListItem>)">
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="TrangThai" class="form-label"></label>
+                    <select asp-for="TrangThai" class="form-select">
+                        <option value="@VehicleStatus.SanSang">Sẵn sàng</option>
+                        <option value="@VehicleStatus.DangDi">Đang đi</option>
+                        <option value="@VehicleStatus.BaoTri">Bảo trì</option>
+                    </select>
+                </div>
+            </div>
+
+            <hr class="my-4" />
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-success px-4">
+                    <i class="bi bi-check-lg me-1"></i> Lưu
+                </button>
+                <a asp-action="Index" class="btn btn-outline-secondary px-4">Hủy</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
+
+

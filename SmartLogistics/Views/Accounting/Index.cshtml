@@ -1,0 +1,274 @@
+@model SmartLogistics.Models.ViewModels.AccountingDashboardViewModel
+@{
+    ViewData["Title"] = "Báo cáo & Thống kê";
+    Layout = "~/Views/Shared/_LayoutKeToan.cshtml";
+}
+
+<!-- Page Title & Filter -->
+<div class="page-title">
+    <h2><i class="bi bi-bar-chart-line-fill me-2"></i>Báo cáo & Thống kê</h2>
+</div>
+
+<div class="filter-bar mb-4">
+    <form asp-action="Index" method="get" class="d-flex align-items-center gap-2 flex-wrap w-100">
+        <label class="form-label mb-0 text-muted small">Từ ngày</label>
+        <input type="date" name="tuNgay" class="form-control" style="max-width: 170px;"
+               value="@Model.TuNgay?.ToString("yyyy-MM-dd")" />
+        <label class="form-label mb-0 text-muted small">Đến ngày</label>
+        <input type="date" name="denNgay" class="form-control" style="max-width: 170px;"
+               value="@Model.DenNgay?.ToString("yyyy-MM-dd")" />
+        <button type="submit" class="btn btn-primary"><i class="bi bi-funnel me-1"></i> Lọc</button>
+        <a asp-action="Index" class="btn btn-outline-secondary"><i class="bi bi-arrow-clockwise me-1"></i> Reset</a>
+    </form>
+</div>
+
+<!-- Stat Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card stat-card">
+            <div class="card-body">
+                <div class="stat-info">
+                    <p>Tổng doanh thu</p>
+                    <h3 style="font-size: 1.4rem;">@Model.TongDoanhThu.ToString("N0") ₫</h3>
+                </div>
+                <div class="stat-icon bg-success-light"><i class="bi bi-graph-up-arrow"></i></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card">
+            <div class="card-body">
+                <div class="stat-info">
+                    <p>Chi phí vận hành</p>
+                    <h3 style="font-size: 1.4rem;">@Model.ChiPhiVanHanh.ToString("N0") ₫</h3>
+                </div>
+                <div class="stat-icon bg-danger-light"><i class="bi bi-cash-stack"></i></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card">
+            <div class="card-body">
+                <div class="stat-info">
+                    <p>Lợi nhuận</p>
+                    <h3 style="font-size: 1.4rem;">@Model.LoiNhuan.ToString("N0") ₫</h3>
+                </div>
+                <div class="stat-icon bg-primary-light"><i class="bi bi-wallet2"></i></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card">
+            <div class="card-body">
+                <div class="stat-info">
+                    <p>Tổng chuyến đi</p>
+                    <h3>@Model.TongChuyenDi</h3>
+                </div>
+                <div class="stat-icon" style="background: rgba(100,116,139,0.12); color: #64748b;"><i class="bi bi-truck"></i></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Row -->
+<div class="row g-3 mb-4">
+    <div class="col-md-8">
+        <div class="chart-card">
+            <h6><i class="bi bi-bar-chart me-1"></i> Doanh thu theo tháng</h6>
+            <div style="position: relative; height: 280px;">
+                <canvas id="revenueChart"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="chart-card">
+            <h6><i class="bi bi-pie-chart me-1"></i> Tỷ lệ đơn hàng</h6>
+            <div style="position: relative; height: 280px;">
+                <canvas id="statusChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Monthly Detail Table -->
+<div class="card data-card">
+    <div class="card-header">
+        <i class="bi bi-table me-2"></i>Chi tiết doanh thu theo tháng
+    </div>
+    <div class="table-responsive">
+        <table class="table table-dashboard">
+            <thead>
+                <tr>
+                    <th>Tháng</th>
+                    <th class="text-end">Số chuyến</th>
+                    <th class="text-end">Số đơn</th>
+                    <th class="text-end">Doanh thu</th>
+                    <th class="text-end">Chi phí NL</th>
+                    <th class="text-end">Lợi nhuận</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var row in Model.MonthlyDetails)
+                {
+                    <tr>
+                        <td><strong>@row.Thang</strong></td>
+                        <td class="text-end">@row.SoChuyen</td>
+                        <td class="text-end">@row.SoDon</td>
+                        <td class="text-end text-success fw-semibold">@row.DoanhThu.ToString("N0") ₫</td>
+                        <td class="text-end text-danger">@row.ChiPhiNhienLieu.ToString("N0") ₫</td>
+                        <td class="text-end text-primary fw-bold">@row.LoiNhuan.ToString("N0") ₫</td>
+                    </tr>
+                }
+            </tbody>
+            <tfoot>
+                <tr style="background: #f8fafc; font-weight: 700;">
+                    <td>Tổng cộng</td>
+                    <td class="text-end">@Model.MonthlyDetails.Sum(r => r.SoChuyen)</td>
+                    <td class="text-end">@Model.MonthlyDetails.Sum(r => r.SoDon)</td>
+                    <td class="text-end text-success">@Model.MonthlyDetails.Sum(r => r.DoanhThu).ToString("N0") ₫</td>
+                    <td class="text-end text-danger">@Model.MonthlyDetails.Sum(r => r.ChiPhiNhienLieu).ToString("N0") ₫</td>
+                    <td class="text-end text-primary">@Model.MonthlyDetails.Sum(r => r.LoiNhuan).ToString("N0") ₫</td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+</div>
+
+<!-- Recent Incidents Table -->
+<div class="card data-card mt-4">
+    <div class="card-header bg-danger text-white">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i>Sự cố đang chờ xử lý
+    </div>
+    <div class="table-responsive">
+        <table class="table table-dashboard table-hover">
+            <thead>
+                <tr>
+                    <th>Thời gian</th>
+                    <th>Chuyến đi</th>
+                    <th>Xe</th>
+                    <th>Loại sự cố</th>
+                    <th>Mô tả chi tiết</th>
+                    <th>Trạng thái</th>
+                    <th class="text-end">Hành động</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.RecentIncidents != null && Model.RecentIncidents.Any())
+                {
+                    foreach (var incident in Model.RecentIncidents)
+                    {
+                        var loaiSuCo = incident.LoaiSuCo switch
+                        {
+                            IncidentType.ChayXe => "Cháy xe",
+                            IncidentType.TaiNan => "Tai nạn",
+                            IncidentType.HuHong => "Hư hỏng",
+                            _ => "Khác"
+                        };
+                        var trangThai = incident.TrangThai switch
+                        {
+                            IncidentStatus.DangXuLy => "<span class='badge bg-warning text-dark'>Đang xử lý</span>",
+                            IncidentStatus.DaXuLy => "<span class='badge bg-success'>Đã xử lý</span>",
+                            _ => "<span class='badge bg-secondary'>Chờ</span>"
+                        };
+                        <tr>
+                            <td>@incident.ThoiGian.ToString("dd/MM/yyyy HH:mm")</td>
+                            <td><span class="badge bg-light text-dark border">#CD@(incident.MaChuyenDi.ToString("D3"))</span></td>
+                            <td><strong>@(incident.ChuyenDi?.Xe?.BienSo ?? "—")</strong></td>
+                            <td><span class="text-danger fw-semibold">@loaiSuCo</span></td>
+                            <td style="max-width: 300px; white-space: normal;">@incident.MoTa</td>
+                            <td>@Html.Raw(trangThai)</td>
+                            <td class="text-end">
+                                <form asp-action="ResolveIncident" method="post" style="display:inline-block;"
+                                      onsubmit="return confirm('Bạn đã ghi nhận xong chi phí và xác nhận giải quyết sự cố này?');">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="incidentId" value="@incident.MaSuCo" />
+                                    <!-- Keep the filter values if any -->
+                                    <input type="hidden" name="tuNgay" value="@Model.TuNgay?.ToString("yyyy-MM-dd")" />
+                                    <input type="hidden" name="denNgay" value="@Model.DenNgay?.ToString("yyyy-MM-dd")" />
+                                    <button type="submit" class="btn btn-sm btn-success" title="Đánh dấu đã xử lý xong">
+                                        <i class="bi bi-check-circle"></i> Đã xử lý
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="7" class="text-center text-muted py-4">Tuyệt vời, không có sự cố nào đang chờ xử lý!</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script>
+        // Revenue Bar Chart
+        const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+        new Chart(revenueCtx, {
+            type: 'bar',
+            data: {
+                labels: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.MonthlyRevenue.Select(m => m.Month))),
+                datasets: [{
+                    label: 'Doanh thu (₫)',
+                    data: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.MonthlyRevenue.Select(m => m.Revenue))),
+                    backgroundColor: 'rgba(37, 99, 235, 0.8)',
+                    borderColor: '#2563eb',
+                    borderWidth: 1,
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: ctx => new Intl.NumberFormat('vi-VN').format(ctx.raw) + ' ₫'
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: val => new Intl.NumberFormat('vi-VN', { notation: 'compact' }).format(val) + ' ₫'
+                        }
+                    }
+                }
+            }
+        });
+
+        // Status Doughnut Chart
+        const statusCtx = document.getElementById('statusChart').getContext('2d');
+        new Chart(statusCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Hoàn thành', 'Đang giao', 'Chờ xử lý', 'Đã hủy'],
+                datasets: [{
+                    data: [@Model.OrderStatusChart.HoanThanh, @Model.OrderStatusChart.DangGiao, @Model.OrderStatusChart.ChoXuLy, @Model.OrderStatusChart.DaHuy],
+                    backgroundColor: ['#22c55e', '#3b82f6', '#f59e0b', '#ef4444'],
+                    borderWidth: 0,
+                    cutout: '65%'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { padding: 12, font: { size: 12 } }
+                    }
+                }
+            }
+        });
+    </script>
+}
+
+

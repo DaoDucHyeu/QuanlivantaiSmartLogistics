@@ -1,0 +1,165 @@
+@model List<SmartLogistics.Models.Vehicle>
+@using SmartLogistics.Models
+@{
+    ViewData["Title"] = "Theo dõi GPS";
+    Layout = "~/Views/Shared/_LayoutDieuHanh.cshtml";
+    var latestLocations = ViewBag.LatestLocations as Dictionary<int, TripLocation> ?? new Dictionary<int, TripLocation>();
+}
+
+<div class="page-title">
+    <h2><i class="bi bi-geo-alt-fill me-2"></i>Theo dõi phương tiện</h2>
+    <div class="d-flex align-items-center gap-2">
+        <span class="badge bg-primary">@ViewBag.ActiveCount xe đang đi</span>
+        <span class="badge bg-secondary">@ViewBag.TotalCount tổng</span>
+        <a asp-action="Index" asp-route-filter="active" class="btn btn-sm btn-outline-primary">
+            <i class="bi bi-funnel me-1"></i> Chỉ xe đang đi
+        </a>
+        @if (ViewBag.Filter == "active")
+        {
+            <a asp-action="Index" class="btn btn-sm btn-outline-secondary">Tất cả</a>
+        }
+    </div>
+</div>
+
+<div class="row g-3">
+    <!-- Map -->
+    <div class="col-md-8">
+        <div class="card data-card" style="overflow: hidden;">
+            <div id="trackingMap" style="height: 550px; border-radius: 12px;"></div>
+        </div>
+    </div>
+
+    <!-- Vehicle List -->
+    <div class="col-md-4">
+        <div class="card data-card">
+            <div class="card-header"><i class="bi bi-truck me-2"></i>Danh sách phương tiện</div>
+            <div style="max-height: 500px; overflow-y: auto; padding: 12px;">
+                @foreach (var v in Model)
+                {
+                    var isActive = v.TrangThai == VehicleStatus.DangDi;
+                    var (statusBadge, statusText) = v.TrangThai switch
+                    {
+                        VehicleStatus.DangDi => ("bg-primary", "Đang đi"),
+                        VehicleStatus.BaoTri => ("bg-warning text-dark", "Bảo trì"),
+                        VehicleStatus.SanSang => ("bg-secondary", "Sẵn sàng"),
+                        _ => ("bg-secondary", "—")
+                    };
+                    var activeTrip = v.Trips.FirstOrDefault(t => t.TrangThai == TripStatus.DangThucHien);
+
+                    <div class="p-2 mb-2 rounded-3 vehicle-item @(isActive ? "border-start border-primary border-3" : "")"
+                         style="background: @(isActive ? "#eff6ff" : "#f8fafc"); cursor: pointer;"
+                         data-vehicle-id="@v.MaXe" data-plate="@v.BienSo" data-trip-id="@(activeTrip?.MaChuyenDi ?? 0)" data-lat="0" data-lng="0">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <strong style="font-size: 0.9rem;">@v.BienSo</strong>
+                            <span class="badge @statusBadge rounded-pill" style="font-size: 0.7rem;">@statusText</span>
+                        </div>
+                        <div style="font-size: 0.78rem; color: #64748b;">
+                            <i class="bi bi-person me-1"></i> @(v.TaiXe?.FullName ?? "Chưa phân công")
+                        </div>
+                        @if (activeTrip != null)
+                        {
+                            <div style="font-size: 0.75rem; color: #2563eb; margin-top: 2px;">
+                                <i class="bi bi-signpost-2 me-1"></i> #CD@(activeTrip.MaChuyenDi.ToString("D3"))
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+}
+
+@section Scripts {
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
+    <script>
+        // Initialize map centered on Vietnam
+        const map = L.map('trackingMap').setView([16.0, 106.0], 6);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors',
+            maxZoom: 18
+        }).addTo(map);
+
+        // Custom truck icon
+        const truckIcon = L.divIcon({
+            html: '<div style="background:#2563eb;color:#fff;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,0.3);"><i class="bi bi-truck"></i></div>',
+            className: '',
+            iconSize: [28, 28],
+            iconAnchor: [14, 14]
+        });
+
+        const idleIcon = L.divIcon({
+            html: '<div style="background:#94a3b8;color:#fff;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;border:2px solid #fff;box-shadow:0 2px 4px rgba(0,0,0,0.2);"><i class="bi bi-truck"></i></div>',
+            className: '',
+            iconSize: [22, 22],
+            iconAnchor: [11, 11]
+        });
+
+        // Dictionary để lưu các marker đang hoạt động trên map
+        const activeMarkers = {};
+
+        const vehicles = document.querySelectorAll('.vehicle-item');
+        vehicles.forEach(v => {
+            v.addEventListener('click', () => {
+                const lat = parseFloat(v.dataset.lat);
+                const lng = parseFloat(v.dataset.lng);
+                const tripId = v.dataset.tripId;
+
+                if (lat !== 0 && lng !== 0) {
+                    map.setView([lat, lng], 15);
+                    if (activeMarkers[tripId]) {
+                        activeMarkers[tripId].openPopup();
+                    }
+                } else {
+                    alert("Chưa nhận được toạ độ của xe này!");
+                }
+            });
+        });
+
+        // SignalR connection for real-time updates
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("/trackingHub")
+            .withAutomaticReconnect()
+            .build();
+
+        connection.on("ReceiveLocation", (tripId, lat, lng, speed, time) => {
+            console.log(`Trip ${tripId}: ${lat}, ${lng} @@ ${speed} km/h`);
+
+            let marker = activeMarkers[tripId];
+            if (!marker) {
+                // Nếu xe này chưa có marker, tạo mới
+                const v = document.querySelector(`.vehicle-item[data-trip-id="${tripId}"]`);
+                const plate = v ? v.dataset.plate : `Trip ${tripId}`;
+                const driver = v ? v.querySelector('.bi-person')?.parentElement?.textContent?.trim() : 'Chưa phân công';
+
+                marker = L.marker([lat, lng], { icon: truckIcon })
+                    .addTo(map)
+                    .bindPopup(`<strong>${plate}</strong><br>${driver}<br><i>Tốc độ: <span id="speed-${tripId}">${speed}</span> km/h</i>`);
+                
+                activeMarkers[tripId] = marker;
+            } else {
+                // Cập nhật vị trí
+                marker.setLatLng([lat, lng]);
+                const speedEl = document.getElementById(`speed-${tripId}`);
+                if (speedEl) speedEl.textContent = speed;
+            }
+
+            // Lưu toạ độ mới nhất vào thẻ HTML để khi user click sidebar sẽ bay tới
+            const v = document.querySelector(`.vehicle-item[data-trip-id="${tripId}"]`);
+            if (v) {
+                v.dataset.lat = lat;
+                v.dataset.lng = lng;
+            }
+        });
+
+        connection.start().then(() => {
+            connection.invoke("JoinAdminGroup");
+        }).catch(err => console.log("SignalR:", err));
+    </script>
+}
+
+

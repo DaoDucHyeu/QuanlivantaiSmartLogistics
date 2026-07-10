@@ -1,0 +1,95 @@
+@using Microsoft.AspNetCore.Identity
+@using SmartLogistics.Models
+@inject UserManager<AppUser> UserManager
+@{
+    var user = await UserManager.GetUserAsync(User);
+    var userInitial = user?.FullName?.Substring(0, 1).ToUpper() ?? "T";
+    var currentController = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
+    var currentAction = ViewContext.RouteData.Values["action"]?.ToString() ?? "";
+}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>@ViewData["Title"] - SmartLogistics Tài xế</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="~/css/driver.css" asp-append-version="true" />
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+<body class="driver-body">
+
+    <!-- Top Bar -->
+    <div class="driver-topbar">
+        @if (ViewData["ShowBack"] != null)
+        {
+            <a href="@ViewData["BackUrl"]" style="color: #1e293b; text-decoration: none; font-size: 1.2rem;">
+                <i class="bi bi-arrow-left"></i>
+            </a>
+            <span class="topbar-title">@ViewData["TopTitle"]</span>
+        }
+        else
+        {
+            <div class="topbar-brand">
+                <i class="bi bi-truck"></i> SmartLogistics
+            </div>
+        }
+        <div class="topbar-actions">
+            @if (currentController != "Driver" || currentAction != "Profile")
+            {
+                <button class="btn-icon" title="Thông báo">
+                    <i class="bi bi-bell"></i>
+                    <span class="notif-badge">2</span>
+                </button>
+            }
+        </div>
+    </div>
+
+    <!-- Content -->
+    <div class="driver-content">
+        @if (TempData["Success"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show" style="border-radius: 12px; font-size: 0.85rem;">
+                <i class="bi bi-check-circle-fill me-1"></i> @TempData["Success"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        }
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show" style="border-radius: 12px; font-size: 0.85rem;">
+                <i class="bi bi-exclamation-circle me-1"></i> @TempData["Error"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        }
+
+        @RenderBody()
+    </div>
+
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav">
+        <a class="nav-item @(currentController == "Driver" && currentAction == "Index" ? "active" : "")"
+           asp-controller="Driver" asp-action="Index">
+            <i class="bi bi-house-fill"></i> Trang chủ
+        </a>
+        <a class="nav-item @(currentController == "Driver" && (currentAction == "Trips" || currentAction == "TripDetail") ? "active" : "")"
+           asp-controller="Driver" asp-action="Trips">
+            <i class="bi bi-truck"></i> Chuyến đi
+        </a>
+        <a class="nav-item @(currentController == "Driver" && currentAction == "Incidents" ? "active" : "")"
+           asp-controller="Driver" asp-action="Incidents">
+            <i class="bi bi-exclamation-triangle-fill"></i> Sự cố
+        </a>
+        <a class="nav-item @(currentController == "Driver" && currentAction == "Profile" ? "active" : "")"
+           asp-controller="Driver" asp-action="Profile">
+            <i class="bi bi-person-fill"></i> Tài khoản
+        </a>
+    </nav>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

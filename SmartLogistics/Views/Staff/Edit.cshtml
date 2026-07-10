@@ -1,0 +1,101 @@
+@model SmartLogistics.Models.ViewModels.StaffEditViewModel
+@using SmartLogistics.Models
+@{
+    ViewData["Title"] = "Chỉnh sửa nhân sự";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<div class="page-title">
+    <h2><i class="bi bi-pencil-square me-2"></i>Chỉnh sửa nhân sự</h2>
+    <a asp-action="Index" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i> Quay lại
+    </a>
+</div>
+
+<div class="card data-card">
+    <div class="card-body p-4">
+        <form asp-action="Edit" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="Id" />
+
+            <div asp-validation-summary="All" class="alert alert-danger alert-custom" style="display: @(ViewData.ModelState.ErrorCount > 0 ? "block" : "none")"></div>
+
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label asp-for="FullName" class="form-label"></label>
+                    <input asp-for="FullName" class="form-control" />
+                    <span asp-validation-for="FullName" class="text-danger small"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="UserName" class="form-label"></label>
+                    <input asp-for="UserName" class="form-control" />
+                    <span asp-validation-for="UserName" class="text-danger small"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="Email" class="form-label"></label>
+                    <input asp-for="Email" class="form-control" />
+                    <span asp-validation-for="Email" class="text-danger small"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="PhoneNumber" class="form-label"></label>
+                    <input asp-for="PhoneNumber" class="form-control" />
+                    <span asp-validation-for="PhoneNumber" class="text-danger small"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="NewPassword" class="form-label"></label>
+                    <input asp-for="NewPassword" class="form-control" placeholder="Để trống nếu không đổi" />
+                    <span asp-validation-for="NewPassword" class="text-danger small"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="UserType" class="form-label"></label>
+                    <select asp-for="UserType" class="form-select" id="roleSelect">
+                        <option value="@UserType.DieuHanh">Điều hành</option>
+                        <option value="@UserType.TaiXe">Tài xế</option>
+                        <option value="@UserType.KeToan">Kế toán</option>
+                    </select>
+                    <span asp-validation-for="UserType" class="text-danger small"></span>
+                </div>
+                <div class="col-md-6" id="DieuHanhSection" style="display: none;">
+                    <label asp-for="DieuHanhId" class="form-label"></label>
+                    <select asp-for="DieuHanhId" class="form-select" asp-items="@(ViewBag.DispatcherList as IEnumerable<SelectListItem>)">
+                        <option value="">-- Chọn Điều hành quản lý --</option>
+                    </select>
+                    <span asp-validation-for="DieuHanhId" class="text-danger small"></span>
+                </div>
+            </div>
+
+            <hr class="my-4" />
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary px-4">
+                    <i class="bi bi-check-lg me-1"></i> Cập nhật
+                </button>
+                <a asp-action="Index" class="btn btn-outline-secondary px-4">Hủy</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const roleSelect = document.getElementById('roleSelect');
+            const DieuHanhSection = document.getElementById('DieuHanhSection');
+
+            function toggleDieuHanhSection() {
+                // UserType.TaiXe enum value is 2
+                if (roleSelect.value === 'TaiXe' || roleSelect.value === '2') {
+                    DieuHanhSection.style.display = 'block';
+                } else {
+                    DieuHanhSection.style.display = 'none';
+                    document.getElementById('DieuHanhId').value = '';
+                }
+            }
+
+            roleSelect.addEventListener('change', toggleDieuHanhSection);
+            toggleDieuHanhSection(); // Run on load
+        });
+    </script>
+}
+
+

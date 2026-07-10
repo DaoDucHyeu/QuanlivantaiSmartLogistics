@@ -1,0 +1,95 @@
+@model List<SmartLogistics.Controllers.NotificationItem>
+@{
+    ViewData["Title"] = "Thông báo";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<div class="page-title">
+    <h2><i class="bi bi-bell-fill me-2"></i>Thông báo hệ thống</h2>
+    <span class="badge bg-info rounded-pill">@Model.Count thông báo</span>
+</div>
+
+<div class="card data-card">
+    @if (!Model.Any())
+    {
+        <div class="text-center text-muted py-5">
+            <i class="bi bi-bell-slash fs-1 d-block mb-2"></i>
+            <p>Chưa có thông báo nào</p>
+        </div>
+    }
+    else
+    {
+        <div class="list-group list-group-flush">
+            @foreach (var notif in Model)
+            {
+                var timeAgo = (DateTime.Now - notif.Time).TotalMinutes;
+                var timeText = timeAgo < 60
+                    ? $"{(int)timeAgo} phút trước"
+                    : (timeAgo < 1440
+                        ? $"{(int)(timeAgo / 60)} giờ trước"
+                        : notif.Time.ToString("dd/MM/yyyy HH:mm"));
+
+                <div class="list-group-item px-4 py-3 border-0 border-bottom" style="border-color: #f1f5f9 !important;">
+                    <div class="d-flex align-items-start gap-3">
+                        <div style="width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+                             background: @(notif.Color == "success" ? "rgba(34,197,94,0.12)" : notif.Color == "danger" ? "rgba(239,68,68,0.12)" : "rgba(59,130,246,0.12)");
+                             color: @(notif.Color == "success" ? "#22c55e" : notif.Color == "danger" ? "#ef4444" : "#3b82f6");">
+                            <i class="bi @notif.Icon"></i>
+                        </div>
+                        <div class="flex-fill">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <strong style="font-size: 0.9rem; color: #1e293b;">@notif.Title</strong>
+                                <small class="text-muted" style="font-size: 0.75rem; white-space: nowrap;">@timeText</small>
+                            </div>
+                            <p class="mb-0 mt-1" style="font-size: 0.82rem; color: #64748b;">@notif.Message</p>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
+    <script>
+        // Real-time notification listener
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("/trackingHub")
+            .withAutomaticReconnect()
+            .build();
+
+        connection.on("ReceiveNotification", (title, message, type, time) => {
+            // Prepend new notification to list
+            const list = document.querySelector('.list-group');
+            if (list) {
+                const colorMap = { success: '#22c55e', danger: '#ef4444', info: '#3b82f6' };
+                const bgMap = { success: 'rgba(34,197,94,0.12)', danger: 'rgba(239,68,68,0.12)', info: 'rgba(59,130,246,0.12)' };
+                const iconMap = { success: 'bi-check-circle-fill', danger: 'bi-exclamation-triangle-fill', info: 'bi-box-seam-fill' };
+
+                const item = document.createElement('div');
+                item.className = 'list-group-item px-4 py-3 border-0 border-bottom';
+                item.style.borderColor = '#f1f5f9';
+                item.style.animation = 'fadeIn 0.3s ease';
+                item.innerHTML = `
+                    <div class="d-flex align-items-start gap-3">
+                        <div style="width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:${bgMap[type]||bgMap.info};color:${colorMap[type]||colorMap.info};">
+                            <i class="bi ${iconMap[type]||iconMap.info}"></i>
+                        </div>
+                        <div class="flex-fill">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <strong style="font-size:0.9rem;color:#1e293b;">${title}</strong>
+                                <small class="text-muted" style="font-size:0.75rem;">Vừa xong</small>
+                            </div>
+                            <p class="mb-0 mt-1" style="font-size:0.82rem;color:#64748b;">${message}</p>
+                        </div>
+                    </div>`;
+                list.prepend(item);
+            }
+        });
+
+        connection.start().catch(err => console.log("SignalR:", err));
+    </script>
+}
+
+

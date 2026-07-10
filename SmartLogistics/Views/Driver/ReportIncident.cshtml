@@ -1,0 +1,81 @@
+@model SmartLogistics.Models.ViewModels.IncidentFormViewModel
+@using SmartLogistics.Models
+@{
+    ViewData["Title"] = "Báo cáo sự cố";
+    Layout = "~/Views/Shared/_DriverLayout.cshtml";
+}
+
+<!-- Warning Card -->
+<div class="warning-card">
+    <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+    <span>Vui lòng mô tả sự cố chi tiết để hỗ trợ xử lý nhanh nhất</span>
+</div>
+
+<div class="driver-form">
+    <form asp-action="ReportIncident" method="post">
+        @Html.AntiForgeryToken()
+        <div asp-validation-summary="ModelOnly" class="alert alert-danger" style="border-radius: 12px; font-size: 0.85rem;
+             display: @(ViewData.ModelState.ErrorCount > 0 ? "block" : "none");"></div>
+
+        <input type="hidden" asp-for="MaChuyenDi" />
+
+        <div class="mb-3">
+            <label class="form-label">Chuyến đi liên quan</label>
+            <input type="text" class="form-control" value="@Model.TripInfo" readonly
+                   style="background: #f1f5f9; font-weight: 500;" />
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="LoaiSuCo" class="form-label"></label>
+            <select asp-for="LoaiSuCo" class="form-select">
+                <option value="">— Chọn loại sự cố —</option>
+                <option value="@IncidentType.HuHong">Hư hỏng phương tiện</option>
+                <option value="@IncidentType.TaiNan">Tai nạn giao thông</option>
+                <option value="@IncidentType.ChayXe">Cháy xe</option>
+                <option value="@IncidentType.Khac">Khác</option>
+            </select>
+            <span asp-validation-for="LoaiSuCo" class="text-danger small"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="MoTa" class="form-label"></label>
+            <textarea asp-for="MoTa" class="form-control" rows="4" placeholder="Nhập mô tả chi tiết sự cố..."></textarea>
+            <span asp-validation-for="MoTa" class="text-danger small"></span>
+        </div>
+
+        <div class="row g-3 mb-3">
+            <div class="col-6">
+                <label asp-for="ViTriLat" class="form-label"></label>
+                <input asp-for="ViTriLat" class="form-control" id="incLat" placeholder="Vĩ độ" />
+            </div>
+            <div class="col-6">
+                <label asp-for="ViTriLng" class="form-label"></label>
+                <input asp-for="ViTriLng" class="form-control" id="incLng" placeholder="Kinh độ" />
+            </div>
+        </div>
+        <p class="text-muted" style="font-size: 0.75rem;">
+            <i class="bi bi-geo me-1"></i> Tự động lấy vị trí hiện tại (nếu bật GPS)
+        </p>
+
+        <div class="mt-4">
+            <button type="submit" class="btn-driver btn-driver-primary w-100 mb-2" style="background: #ef4444;">
+                <i class="bi bi-send-fill me-1"></i> Gửi báo cáo
+            </button>
+            <a asp-action="TripDetail" asp-route-id="@Model.MaChuyenDi"
+               class="d-block text-center text-muted" style="font-size: 0.85rem;">Hủy</a>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        // Auto-detect GPS location
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(function (pos) {
+                document.getElementById('incLat').value = pos.coords.latitude.toFixed(6);
+                document.getElementById('incLng').value = pos.coords.longitude.toFixed(6);
+            });
+        }
+    </script>
+}

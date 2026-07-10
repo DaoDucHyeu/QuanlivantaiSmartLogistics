@@ -1,0 +1,52 @@
+@model List<SmartLogistics.Models.Incident>
+@using SmartLogistics.Models
+@{
+    ViewData["Title"] = "Sự cố của tôi";
+    Layout = "~/Views/Shared/_DriverLayout.cshtml";
+}
+
+@if (!Model.Any())
+{
+    <div class="text-center text-muted py-5">
+        <i class="bi bi-shield-check fs-1 d-block mb-2 text-success"></i>
+        <p>Chưa có sự cố nào được báo cáo</p>
+    </div>
+}
+else
+{
+    @foreach (var incident in Model)
+    {
+        var typeText = incident.LoaiSuCo switch
+        {
+            IncidentType.ChayXe => "Cháy xe",
+            IncidentType.TaiNan => "Tai nạn",
+            IncidentType.HuHong => "Hư hỏng",
+            IncidentType.Khac => "Khác",
+            _ => "—"
+        };
+        var (statusBadge, statusText) = incident.TrangThai switch
+        {
+            IncidentStatus.DangXuLy => ("bg-warning text-dark", "Đang xử lý"),
+            IncidentStatus.DaXuLy => ("bg-success", "Đã xử lý"),
+            _ => ("bg-secondary", "—")
+        };
+
+        <div class="trip-card" style="border-left-color: @(incident.TrangThai == IncidentStatus.DangXuLy ? "#f59e0b" : "#22c55e");">
+            <div class="trip-header mb-2">
+                <span class="trip-code">
+                    <i class="bi bi-exclamation-triangle-fill text-warning me-1"></i>
+                    @typeText
+                </span>
+                <span class="badge @statusBadge rounded-pill">@statusText</span>
+            </div>
+            <p style="font-size: 0.85rem; color: #334155; margin: 0 0 8px;">@incident.MoTa</p>
+            <div style="font-size: 0.78rem; color: #64748b;">
+                <i class="bi bi-clock me-1"></i> @incident.ThoiGian.ToString("dd/MM/yyyy HH:mm")
+                @if (incident.ChuyenDi != null)
+                {
+                    <span class="ms-2"><i class="bi bi-truck me-1"></i> #CD@(incident.MaChuyenDi.ToString("D3"))</span>
+                }
+            </div>
+        </div>
+    }
+}
