@@ -28,14 +28,14 @@ Chọn Default project là SmartLogistics
 Chạy lệnh:
 Update-Database
 
-### Bước 4: Thêm Dữ liệu mẫu (Seed Data)
+### 4.Thêm Dữ liệu mẫu (Seed Data)
 Sau khi database SmartLogisticsDB được tạo, bạn cần thêm dữ liệu mẫu để hệ thống có thể hoạt động đầy đủ:
 
 Mở SQL Server Management Studio (SSMS) hoặc tool quản lý SQL.
 Kết nối tới database SmartLogisticsDB.
 Mở file sql/SeedData.sql có sẵn trong thư mục dự án.
 Nhấn Execute (F5) để chạy script và chèn dữ liệu mẫu.
-### Bước 5: Chạy dự án
+### 5.Chạy dự án
 Bây giờ mọi thứ đã sẵn sàng. Bạn có thể:
 
 Mở file solution SmartLogistics-UTC.sln bằng Visual Studio 2022 và nhấn F5 (hoặc nút Run).
